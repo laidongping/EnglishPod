@@ -1,0 +1,412 @@
+/* ============================================================
+   print.css  v3
+   ============================================================ */
+
+@import url("https://fonts.googleapis.com/css2?family=Courier+Prime:ital,wght@0,400;0,700;1,400&family=Georgia&display=swap");
+
+:root {
+    --font-mono: "Courier Prime", "Courier New", monospace;
+    --font-serif: Georgia, "Times New Roman", serif;
+    --font-sans: Arial, Helvetica, sans-serif;
+    --toolbar-h: 40px;
+}
+
+/* ─────────────────────────────────────────
+   屏幕预览
+───────────────────────────────────────── */
+@media screen {
+    body {
+        background: #909090;
+        margin: 0;
+        padding: var(--toolbar-h) 0 40px;
+        font-family: var(--font-mono);
+        font-size: 8.5pt;
+        line-height: 1.35;
+        color: #000;
+        counter-reset: page-num;
+    }
+
+    /* ── 工具栏 ── */
+    #print-toolbar {
+        position: fixed;
+        top: 0;
+        left: 0;
+        right: 0;
+        height: var(--toolbar-h);
+        z-index: 1000;
+        background: #1e1e1e;
+        display: flex;
+        flex-wrap: nowrap; /* 不换行，标签不会掉行 */
+        align-items: center;
+        gap: 4px;
+        padding: 0 10px;
+        box-sizing: border-box;
+        overflow-x: auto; /* 超窄屏横向滚动 */
+        overflow-y: hidden;
+        white-space: nowrap;
+        font-family: Arial, Helvetica, sans-serif;
+        font-size: 12px;
+        color: #ccc;
+    }
+
+    #print-toolbar label {
+        color: #999;
+        font-size: 11px;
+        padding: 0 2px 0 6px;
+        flex-shrink: 0;
+    }
+
+    #print-toolbar button {
+        flex-shrink: 0;
+        font-family: inherit;
+        font-size: 12px;
+        padding: 3px 10px;
+        border: 1px solid #555;
+        background: #333;
+        color: #ddd;
+        cursor: pointer;
+        border-radius: 3px;
+        line-height: 1.4;
+        white-space: nowrap;
+    }
+
+    #print-toolbar button:hover {
+        background: #4a4a4a;
+    }
+    #print-toolbar button.active {
+        background: #1a4a8a;
+        border-color: #4a7acc;
+        color: #fff;
+    }
+
+    #print-toolbar .sep {
+        flex-shrink: 0;
+        width: 1px;
+        height: 20px;
+        background: #444;
+        margin: 0 4px;
+    }
+
+    /* 打印按钮推到最右 */
+    #print-toolbar .btn-print {
+        margin-left: auto;
+        background: #1a4a8a;
+        border-color: #4a7acc;
+        color: #fff;
+    }
+    #print-toolbar .btn-print:hover {
+        background: #2a5a9a;
+    }
+
+    /* ── TOC 侧边栏 ── */
+    #toc-sidebar {
+        position: fixed;
+        top: var(--toolbar-h);
+        left: 0;
+        width: 260px;
+        height: calc(100vh - var(--toolbar-h));
+        background: #1a1a1a;
+        color: #ccc;
+        overflow-y: auto;
+        z-index: 999;
+        transform: translateX(-100%);
+        transition: transform 0.22s ease;
+        font-family: Arial, Helvetica, sans-serif;
+        font-size: 11px;
+        box-shadow: 2px 0 12px rgba(0, 0, 0, 0.5);
+    }
+
+    #toc-sidebar.open {
+        transform: translateX(0);
+    }
+
+    #toc-sidebar h2 {
+        font-size: 10px;
+        text-transform: uppercase;
+        letter-spacing: 0.1em;
+        color: #666;
+        margin: 0;
+        padding: 10px 12px 8px;
+        border-bottom: 1px solid #2a2a2a;
+    }
+
+    #toc-sidebar ol {
+        list-style: none;
+        margin: 0;
+        padding: 4px 0;
+    }
+
+    #toc-sidebar li a {
+        display: block;
+        padding: 4px 12px;
+        color: #bbb;
+        text-decoration: none;
+        overflow: hidden;
+        text-overflow: ellipsis;
+        white-space: nowrap;
+    }
+    #toc-sidebar li a:hover {
+        background: #2a2a2a;
+        color: #fff;
+    }
+
+    /* TOC 遮罩（点击空白处关闭） */
+    #toc-overlay {
+        display: none;
+        position: fixed;
+        inset: var(--toolbar-h) 0 0 0;
+        z-index: 998;
+        background: transparent;
+    }
+    #toc-overlay.active {
+        display: block;
+    }
+
+    /* ── A4 页面容器 ── */
+    #page-container {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        gap: 6mm; /* 原 16mm → 缩小为 6mm */
+        padding: 10mm 0 16mm;
+    }
+
+    /* ── 单张 A4 纸 ── */
+    .print-page {
+        background: #fff;
+        width: 210mm;
+        padding: 12mm 10mm;
+        box-sizing: border-box;
+        box-shadow: 0 3px 20px rgba(0, 0, 0, 0.35);
+        flex-shrink: 0;
+        font-size: 8.5pt;
+        line-height: 1.35;
+        color: #000;
+        /* 删除 min-height: 297mm ← 不再强制 A4 高度 */
+        /* 删除 page-break 相关属性 */
+    }
+
+    /* 用 repeating-linear-gradient 画出 A4 分页线 */
+    background-image: repeating-linear-gradient(
+        to bottom,
+        transparent 0,
+        transparent calc(273mm - 1px),
+        #c0c0c0 calc(273mm - 1px),
+        #c0c0c0 273mm,
+        transparent 273mm,
+        transparent 297mm
+    );
+    background-attachment: local;
+
+    /* ── 可选：在每个 episode 之间加一条细分隔线 ── */
+    .print-page + .print-page {
+        border-top: 0.5pt dashed #ccc;
+        margin-top: 0.8em;
+        padding-top: 0.8em;
+    }
+
+    body.col-2 .print-page {
+        columns: 2;
+        column-gap: 5mm;
+        column-rule: 0.3pt solid #ccc;
+        column-fill: balance;
+        padding: 12mm 10mm;
+    }
+    body.col-1 .print-page {
+        columns: 1;
+    }
+
+    /* TOC 打开时页面右移 */
+    body.toc-open #page-container {
+        margin-left: 260px;
+    }
+}
+
+/* ─────────────────────────────────────────
+   正文样式（屏幕 + 打印共用）
+───────────────────────────────────────── */
+
+h1 {
+    font-size: 8.5pt;
+    font-weight: bold;
+    /* text-transform: uppercase; */
+    letter-spacing: 0.04em;
+    border-bottom: 0.5pt solid #000;
+    padding-bottom: 0.15em;
+    margin: 0.8em 0 0.3em;
+    break-after: avoid;
+    page-break-after: avoid;
+}
+h1:first-child {
+    margin-top: 0;
+}
+
+h2 {
+    font-size: 8pt;
+    font-weight: bold;
+    text-transform: uppercase;
+    letter-spacing: 0.03em;
+    margin: 0.6em 0 0.2em;
+    break-after: avoid;
+    page-break-after: avoid;
+}
+
+.tags {
+    display: none;
+}
+
+/* ── 对话块 ── */
+dl.dialogue-block {
+    display: grid;
+    grid-template-columns: max-content minmax(0, 1fr);
+    margin: 0 0 0.3em;
+    padding: 0;
+}
+
+dt {
+    grid-column: 1;
+    text-align: right;
+    white-space: nowrap;
+    font-weight: bold;
+    text-transform: uppercase;
+    letter-spacing: 0.04em;
+    font-size: 8pt;
+    align-self: baseline;
+    margin: 0;
+    padding: 0.04em 0;
+    color: #111;
+}
+dt::after {
+    content: ":";
+    font-weight: normal;
+    color: #444;
+    margin-left: 0.05em;
+    margin-right: 0.4em;
+}
+
+dd {
+    grid-column: 2;
+    margin: 0;
+    padding: 0.04em 0;
+    align-self: baseline;
+    line-height: 1.35;
+    hyphens: auto;
+    overflow-wrap: break-word;
+    color: #111;
+}
+
+/* 舞台指示（斜体行） */
+dt:has(+ dd > i) {
+    color: #555;
+    font-weight: normal;
+    text-transform: none;
+    letter-spacing: 0;
+}
+dt:has(+ dd > i)::after {
+    content: none;
+}
+dd > i {
+    color: #444;
+    font-style: italic;
+}
+
+/* ── 词汇表 ── */
+body.hide-vocab h2,
+body.hide-vocab .vocab-block {
+    display: none !important;
+}
+
+table.vocab-block {
+    width: 100%;
+    border-collapse: collapse;
+    table-layout: auto;
+    font-size: 7.5pt;
+    margin-bottom: 0.4em;
+}
+table.vocab-block th,
+table.vocab-block td {
+    padding: 0.08em 0.4em 0.08em 0;
+    vertical-align: top;
+    border-bottom: 0.3pt solid #ddd;
+    word-break: break-word;
+    hyphens: auto;
+    color: #111;
+}
+table.vocab-block th {
+    font-weight: bold;
+    white-space: nowrap;
+    text-align: left;
+    color: #000;
+}
+table.vocab-block td.type {
+    color: #444; /* 原 #555，提高对比度 */
+    font-style: italic;
+}
+
+/* ── 字体切换 ── */
+body.font-mono * {
+    font-family: var(--font-mono) !important;
+}
+body.font-serif * {
+    font-family: var(--font-serif) !important;
+}
+body.font-sans * {
+    font-family: var(--font-sans) !important;
+}
+
+/* ─────────────────────────────────────────
+   打印输出
+───────────────────────────────────────── */
+@media print {
+    #print-toolbar,
+    #toc-sidebar,
+    #toc-overlay {
+        display: none !important;
+    }
+
+    body {
+        background: #fff;
+        padding: 0;
+        margin: 0;
+        font-family: var(--font-mono);
+        font-size: 8.5pt;
+        line-height: 1.35;
+        color: #000;
+    }
+
+    #page-container {
+        display: block;
+        padding: 0;
+        gap: 0;
+    }
+
+    .print-page {
+        width: 100%;
+        min-height: unset; /* 打印时不强制高度，让内容自然流动 */
+        padding: 0;
+        box-shadow: none;
+        position: relative; /* 保留，供页码 ::after 定位用 */
+    }
+
+    body.col-2 {
+        columns: 2;
+        column-gap: 5mm;
+        column-rule: 0.3pt solid #ccc;
+        column-fill: auto;
+    }
+    body.col-1 {
+        columns: 1;
+    }
+
+    @page {
+        margin: 12mm 10mm;
+        @bottom-center {
+            content: counter(page);
+            font-size: 7pt;
+            color: #888;
+        }
+    }
+    a::after {
+        content: none !important;
+    }
+}

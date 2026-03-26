@@ -1,0 +1,357 @@
+/* ============================================================
+   EnglishPod — BBC / Final Draft Screenplay Format
+   ============================================================ */
+
+@font-face {
+    font-family: "CourierPrimeLocal";
+    src:
+        url("fonts/courier-prime-v11-latin-regular.woff2") format("woff2"),
+        url("fonts/CourierPrime-Regular.ttf") format("truetype");
+    font-weight: normal;
+    font-style: normal;
+}
+
+@font-face {
+    font-family: "CourierPrimeLocal";
+    src:
+        url("fonts/courier-prime-v11-latin-700.woff2") format("woff2"),
+        url("fonts/CourierPrime-Bold.ttf") format("truetype");
+    font-weight: bold;
+    font-style: normal;
+}
+
+@font-face {
+    font-family: "CourierPrimeLocal";
+    src:
+        url("fonts/courier-prime-v11-latin-italic.woff2") format("woff2"),
+        url("fonts/CourierPrime-Italic.ttf") format("truetype");
+    font-weight: normal;
+    font-style: italic;
+}
+
+*,
+*::before,
+*::after {
+    box-sizing: border-box;
+}
+
+body {
+    font-family:
+        "CourierPrimeLocal", "Courier Prime", "Courier New", Courier, monospace,
+        "Noto Serif SC", "Source Han Serif", "思源宋体 CN", "STSong",
+        "华文宋体", "SimSun", "宋体";
+    font-size: 12pt;
+    line-height: 1.5;
+    color: #111;
+    background: #d6d3cc;
+    margin: 0;
+    padding: 2.5em 0;
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+    text-rendering: optimizeLegibility;
+}
+
+.script-page {
+    background: #fff;
+    max-width: 680px;
+    margin: 0 auto 2.5em;
+    padding: 2.8em 2.8em 2.8em 4.2em;
+    box-shadow: 0 2px 16px rgba(0, 0, 0, 0.15);
+}
+
+h1 {
+    font-size: 12pt;
+    font-weight: bold;
+    text-transform: uppercase;
+    letter-spacing: 0.06em;
+    text-align: left;
+    border-bottom: 2px solid #111;
+    padding-bottom: 0.4em;
+    margin: 0 0 0.5em;
+}
+
+h2 {
+    font-size: 12pt;
+    font-weight: bold;
+    text-transform: uppercase;
+    letter-spacing: 0.04em;
+    border-top: none;
+    padding-top: 0;
+    margin: 2em 0 0.6em;
+}
+
+/* ── Tags ─────────────────────────────────────────────────── */
+
+.tags {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.5em;
+    margin-bottom: 2em;
+}
+
+.tag {
+    font-family: inherit;
+    font-size: 0.82em;
+    padding: 0.1em 0.55em;
+    border: 1px solid #aaa;
+    border-radius: 3px;
+    background: transparent;
+    color: #555;
+    letter-spacing: 0;
+}
+
+.tag-level {
+    color: #1a3a6a;
+    border-color: #1a3a6a;
+}
+.tag-category {
+    color: #5a3e00;
+    border-color: #9a6e00;
+}
+.tag-code {
+    color: #888;
+    border-color: #bbb;
+}
+
+/* ── Dialogue ─────────────────────────────────────────────── */
+
+dl.dialogue-block {
+    display: grid;
+    grid-template-columns: max-content minmax(0, 1fr);
+    margin: 0 0 1.8em;
+    padding: 0;
+    row-gap: 0.1em;
+}
+
+dt {
+    grid-column: 1;
+    text-align: right;
+    white-space: nowrap;
+    font-weight: bold;
+    text-transform: uppercase;
+    letter-spacing: 0.08em;
+    font-size: 11.5pt;
+    color: #111;
+    align-self: baseline;
+    margin: 0;
+    padding: 0.25em 0;
+    border-bottom: 1px dotted #ebebeb;
+}
+
+dt::after {
+    content: ":";
+    font-weight: normal;
+    color: #777;
+    margin-left: 0.08em;
+    margin-right: 0.65em;
+}
+
+dd {
+    grid-column: 2;
+    margin: 0;
+    padding: 0.25em 0;
+    color: #1a1a1a;
+    align-self: baseline;
+    line-height: 1.55;
+    border-bottom: 1px dotted #ebebeb;
+}
+
+/* 歌词行：音符占位，内容与台词对齐，无边框 */
+dt:has(+ dd > i) {
+    color: #777;
+    border-bottom: none;
+}
+
+dt:has(+ dd > i)::after {
+    content: none;
+    /* content: " ";
+    white-space: pre;
+    margin-left: 0.08em;
+    margin-right: 0.65em; */
+}
+
+dd:has(> i) {
+    border-bottom: none;
+}
+
+dd > i {
+    display: block;
+    color: #555;
+    font-style: italic;
+    padding-left: 1.2em;
+    margin: 0.1em 0;
+}
+
+/* ── Vocabulary ───────────────────────────────────────────── */
+
+table.vocab-block {
+    width: 100%;
+    border-collapse: collapse;
+    table-layout: auto; /* 改为 auto，不再固定列宽 */
+    font-size: 11pt;
+    margin-bottom: 1.4em;
+}
+
+/* 删除 .col-word 和 .col-type 的固定宽度 */
+.col-word {
+    width: auto;
+}
+.col-type {
+    width: auto;
+}
+.col-def {
+    width: auto;
+}
+
+table.vocab-block th {
+    font-weight: bold;
+    color: #1a3a6a;
+    text-transform: none;
+    white-space: nowrap; /* 单词本身不换行 */
+    text-align: left;
+    padding-right: 1.2em; /* 与词性列保持间距 */
+}
+
+table.vocab-block td.type {
+    color: #888;
+    font-style: italic;
+    font-size: 0.9em;
+    white-space: normal; /* 词性允许换行 */
+    padding-right: 1em;
+}
+
+table.vocab-block td.definition {
+    color: #222;
+    white-space: normal;
+}
+
+/* ── 窄屏 ─────────────────────────────────────────────────── */
+
+@media screen and (max-width: 540px) {
+    body {
+        padding: 0;
+    }
+
+    .script-page {
+        padding: 1.5em 1.2em 1.5em 1.5em;
+        box-shadow: none;
+        margin-bottom: 1.5em;
+    }
+
+    dl.dialogue-block.long {
+        grid-template-columns: 1fr;
+    }
+
+    dl.dialogue-block.long dt,
+    dl.dialogue-block.long dd {
+        grid-column: 1;
+        border-bottom: none;
+    }
+
+    dl.dialogue-block.long dt {
+        text-align: left;
+        margin-top: 0.9em;
+        white-space: normal;
+        word-break: break-word;
+        padding-bottom: 0.15em;
+        border-bottom: 1px solid #ddd;
+    }
+
+    dl.dialogue-block.long dt::after {
+        content: none;
+    }
+
+    dl.dialogue-block.long dd {
+        padding-left: 0;
+        margin-bottom: 0.3em;
+    }
+
+    table.vocab-block,
+    table.vocab-block tbody,
+    table.vocab-block tr,
+    table.vocab-block th,
+    table.vocab-block td {
+        display: block;
+    }
+
+    table.vocab-block tr {
+        border-bottom: 1px solid #e0e0e0;
+        padding: 0.55em 0;
+    }
+
+    table.vocab-block th,
+    table.vocab-block td {
+        border: none;
+        padding: 0;
+        margin-bottom: 0.1em;
+        white-space: normal;
+    }
+}
+
+/* ── 打印 ─────────────────────────────────────────────────── */
+
+@media print {
+    body {
+        background: #fff;
+        padding: 0;
+    }
+
+    .script-page {
+        max-width: 100%;
+        margin: 0;
+        padding: 0 2.5em 0 3.8em;
+        box-shadow: none;
+        font-size: 11pt;
+        line-height: 1.5;
+        columns: 2;
+        column-gap: 2em;
+        column-rule: 1px solid #ccc;
+        orphans: 3;
+        widows: 3;
+        break-after: page;
+    }
+
+    h1 {
+        font-size: 11pt;
+        break-after: avoid;
+    }
+
+    h2,
+    table.vocab-block,
+    .tags {
+        display: none;
+    }
+
+    /* 打印时去掉对话行底线 */
+    dt,
+    dd {
+        border-bottom: none;
+    }
+
+    dt {
+        break-inside: avoid;
+    }
+
+    dl.dialogue-block.long {
+        grid-template-columns: 1fr;
+    }
+
+    dl.dialogue-block.long dt,
+    dl.dialogue-block.long dd {
+        grid-column: 1;
+    }
+
+    dl.dialogue-block.long dt {
+        text-align: left;
+        margin-top: 0.5em;
+        white-space: normal;
+    }
+
+    dl.dialogue-block.long dt::after {
+        content: none;
+    }
+
+    a::after {
+        content: none !important;
+    }
+}
