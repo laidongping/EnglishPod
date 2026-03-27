@@ -371,13 +371,13 @@ table.vocab-block td {
     padding: 0.08em 0.4em 0.08em 0;
     vertical-align: top;
     border-bottom: 0.3pt solid #ddd;
-    word-break: break-word;
+    word-break: normal;
     hyphens: auto;
     color: #111;
 }
 table.vocab-block th {
     font-weight: bold;
-    white-space: nowrap;
+    /*  white-space: nowrap; */
     text-align: left;
     color: #000;
 }

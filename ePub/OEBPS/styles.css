@@ -213,7 +213,7 @@ table.vocab-block th {
     font-weight: bold;
     color: #1a5276;
     text-transform: none;
-    white-space: nowrap; /* 单词本身不换行 */
+    white-space: normal; /* nowrap单词本身不换行 */
     text-align: left;
     padding-right: 1.2em; /* 与词性列保持间距 */
 }
