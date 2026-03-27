@@ -9,6 +9,11 @@
     --font-serif: Georgia, "Times New Roman", serif;
     --font-sans: Arial, Helvetica, sans-serif;
     --toolbar-h: 40px;
+    --fs: 8.5pt;
+    --fs-h1: 8.5pt;
+    --fs-h2: 8pt;
+    --fs-dt: 8pt;
+    --fs-vocab: 7.5pt;
 }
 
 /* ─────────────────────────────────────────
@@ -20,7 +25,7 @@
         margin: 0;
         padding: var(--toolbar-h) 0 40px;
         font-family: var(--font-mono);
-        font-size: 8.5pt;
+        font-size: var(--fs);
         line-height: 1.35;
         color: #000;
         counter-reset: page-num;
@@ -87,6 +92,39 @@
         margin: 0 4px;
     }
 
+    /* ── 筛选下拉 ── */
+    #print-toolbar select {
+        flex-shrink: 0;
+        font-family: inherit;
+        font-size: 12px;
+        padding: 2px 6px;
+        border: 1px solid #555;
+        background: #333;
+        color: #ddd;
+        cursor: pointer;
+        border-radius: 3px;
+        line-height: 1.4;
+        white-space: nowrap;
+        outline: none;
+    }
+    #print-toolbar select:hover {
+        background: #4a4a4a;
+    }
+    #print-toolbar select:focus {
+        border-color: #4a7acc;
+    }
+    #filter-count {
+        font-size: 11px;
+        color: #999;
+        flex-shrink: 0;
+        padding: 0 4px;
+    }
+
+    /* 被筛选隐藏的课程 */
+    .print-page.filtered-out {
+        display: none !important;
+    }
+
     /* 打印按钮推到最右 */
     #print-toolbar .btn-print {
         margin-left: auto;
@@ -150,6 +188,11 @@
         color: #fff;
     }
 
+    /* TOC 筛选隐藏 */
+    #toc-sidebar li.filtered-out {
+        display: none;
+    }
+
     /* TOC 遮罩（点击空白处关闭） */
     #toc-overlay {
         display: none;
@@ -179,7 +222,7 @@
         box-sizing: border-box;
         box-shadow: 0 3px 20px rgba(0, 0, 0, 0.35);
         flex-shrink: 0;
-        font-size: 8.5pt;
+        font-size: var(--fs);
         line-height: 1.35;
         color: #000;
         /* 删除 min-height: 297mm ← 不再强制 A4 高度 */
@@ -227,7 +270,7 @@
 ───────────────────────────────────────── */
 
 h1 {
-    font-size: 8.5pt;
+    font-size: var(--fs-h1);
     font-weight: bold;
     /* text-transform: uppercase; */
     letter-spacing: 0.04em;
@@ -242,7 +285,7 @@ h1:first-child {
 }
 
 h2 {
-    font-size: 8pt;
+    font-size: var(--fs-h2);
     font-weight: bold;
     text-transform: uppercase;
     letter-spacing: 0.03em;
@@ -270,7 +313,7 @@ dt {
     font-weight: bold;
     text-transform: uppercase;
     letter-spacing: 0.04em;
-    font-size: 8pt;
+    font-size: var(--fs-dt);
     align-self: baseline;
     margin: 0;
     padding: 0.04em 0;
@@ -320,7 +363,7 @@ table.vocab-block {
     width: 100%;
     border-collapse: collapse;
     table-layout: auto;
-    font-size: 7.5pt;
+    font-size: var(--fs-vocab);
     margin-bottom: 0.4em;
 }
 table.vocab-block th,
@@ -369,7 +412,7 @@ body.font-sans * {
         padding: 0;
         margin: 0;
         font-family: var(--font-mono);
-        font-size: 8.5pt;
+        font-size: var(--fs);
         line-height: 1.35;
         color: #000;
         orphans: 2;
@@ -388,6 +431,9 @@ body.font-sans * {
         padding: 0;
         box-shadow: none;
         position: relative; /* 保留，供页码 ::after 定位用 */
+    }
+    .print-page.filtered-out {
+        display: none !important;
     }
 
     body.col-2 {
