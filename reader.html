@@ -1,0 +1,295 @@
+<!doctype html>
+<html lang="en">
+    <head>
+        <meta charset="UTF-8" />
+        <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+        <title>EnglishPod Reader</title>
+        <script src="https://cdn.jsdelivr.net/npm/jszip@3.10.1/dist/jszip.min.js"></script>
+        <script src="https://cdn.jsdelivr.net/npm/epubjs@0.3.93/dist/epub.min.js"></script>
+        <style>
+            *,
+            *::before,
+            *::after {
+                box-sizing: border-box;
+                margin: 0;
+                padding: 0;
+            }
+
+            body {
+                font-family: system-ui, sans-serif;
+                background: #1e1e2e;
+                color: #cdd6f4;
+                display: flex;
+                flex-direction: column;
+                height: 100vh;
+                overflow: hidden;
+            }
+
+            /* ── 顶部工具栏 ── */
+            #toolbar {
+                display: flex;
+                align-items: center;
+                gap: 12px;
+                padding: 8px 16px;
+                background: #181825;
+                border-bottom: 1px solid #313244;
+                flex-shrink: 0;
+                flex-wrap: wrap;
+            }
+            #toolbar h1 {
+                font-size: 1rem;
+                font-weight: 600;
+                color: #cba6f7;
+                margin-right: auto;
+            }
+            #toolbar button,
+            #toolbar select {
+                background: #313244;
+                color: #cdd6f4;
+                border: 1px solid #45475a;
+                border-radius: 6px;
+                padding: 4px 10px;
+                font-size: 0.85rem;
+                cursor: pointer;
+            }
+            #toolbar button:hover {
+                background: #45475a;
+            }
+            #progress {
+                font-size: 0.8rem;
+                color: #6c7086;
+            }
+
+            /* ── 主体区域 ── */
+            #main {
+                display: flex;
+                flex: 1;
+                overflow: hidden;
+            }
+
+            /* ── 侧边目录 ── */
+            #toc-panel {
+                width: 260px;
+                background: #181825;
+                border-right: 1px solid #313244;
+                overflow-y: auto;
+                flex-shrink: 0;
+                transition: width 0.2s;
+            }
+            #toc-panel.hidden {
+                width: 0;
+                overflow: hidden;
+            }
+            #toc-panel h2 {
+                font-size: 0.8rem;
+                text-transform: uppercase;
+                letter-spacing: 0.08em;
+                color: #6c7086;
+                padding: 12px 16px 8px;
+            }
+            #toc-list {
+                list-style: none;
+            }
+            #toc-list li a {
+                display: block;
+                padding: 6px 16px;
+                font-size: 0.82rem;
+                color: #bac2de;
+                text-decoration: none;
+                border-left: 3px solid transparent;
+                white-space: nowrap;
+                overflow: hidden;
+                text-overflow: ellipsis;
+            }
+            #toc-list li a:hover {
+                background: #313244;
+                color: #cdd6f4;
+            }
+            #toc-list li a.active {
+                border-left-color: #cba6f7;
+                color: #cba6f7;
+                background: #1e1e2e;
+            }
+
+            /* ── 阅读区 ── */
+            #reader-wrap {
+                flex: 1;
+                display: flex;
+                align-items: stretch;
+                overflow: hidden;
+                position: relative;
+            }
+            #viewer {
+                flex: 1;
+                background: #fff;
+            }
+            /* 翻页按钮 */
+            .nav-btn {
+                position: absolute;
+                top: 50%;
+                transform: translateY(-50%);
+                background: rgba(30, 30, 46, 0.7);
+                color: #cdd6f4;
+                border: none;
+                font-size: 1.8rem;
+                width: 40px;
+                height: 80px;
+                cursor: pointer;
+                z-index: 10;
+                border-radius: 4px;
+                display: flex;
+                align-items: center;
+                justify-content: center;
+                transition: background 0.15s;
+            }
+            .nav-btn:hover {
+                background: rgba(203, 166, 247, 0.3);
+            }
+            #btn-prev {
+                left: 4px;
+            }
+            #btn-next {
+                right: 4px;
+            }
+
+            /* ── 加载提示 ── */
+            #loading {
+                position: absolute;
+                inset: 0;
+                display: flex;
+                align-items: center;
+                justify-content: center;
+                background: #fff;
+                color: #888;
+                font-size: 1rem;
+                z-index: 20;
+            }
+        </style>
+    </head>
+    <body>
+        <!-- 工具栏 -->
+        <div id="toolbar">
+            <h1>📖 EnglishPod</h1>
+            <button id="btn-toc">☰ 目录</button>
+            <button id="btn-prev-top">‹ 上一页</button>
+            <button id="btn-next-top">下一页 ›</button>
+            <select id="font-size-select">
+                <option value="100">字号 100%</option>
+                <option value="110">字号 110%</option>
+                <option value="120" selected>字号 120%</option>
+                <option value="140">字号 140%</option>
+                <option value="160">字号 160%</option>
+            </select>
+            <span id="progress">–</span>
+            <a href="./englishpod.epub" download>
+                <button>⬇ 下载 EPUB</button>
+            </a>
+        </div>
+
+        <!-- 主体 -->
+        <div id="main">
+            <!-- 目录面板 -->
+            <nav id="toc-panel">
+                <h2>目录</h2>
+                <ul id="toc-list"></ul>
+            </nav>
+
+            <!-- 阅读器 -->
+            <div id="reader-wrap">
+                <div id="loading">正在加载 EPUB…</div>
+                <div id="viewer"></div>
+                <button class="nav-btn" id="btn-prev">‹</button>
+                <button class="nav-btn" id="btn-next">›</button>
+            </div>
+        </div>
+
+        <script>
+            const book = ePub("./englishpod.epub");
+            const rendition = book.renderTo("viewer", {
+                width: "100%",
+                height: "100%",
+                spread: "none",
+                flow: "paginated",
+            });
+
+            // 初始显示
+            rendition.display().then(() => {
+                document.getElementById("loading").style.display = "none";
+            });
+
+            // 字体大小
+            const fontSelect = document.getElementById("font-size-select");
+            fontSelect.addEventListener("change", () => {
+                rendition.themes.fontSize(fontSelect.value + "%");
+            });
+            rendition.themes.fontSize("120%");
+
+            // 翻页
+            function prev() {
+                rendition.prev();
+            }
+            function next() {
+                rendition.next();
+            }
+            document.getElementById("btn-prev").onclick = prev;
+            document.getElementById("btn-next").onclick = next;
+            document.getElementById("btn-prev-top").onclick = prev;
+            document.getElementById("btn-next-top").onclick = next;
+
+            // 键盘翻页
+            document.addEventListener("keydown", (e) => {
+                if (e.key === "ArrowLeft") prev();
+                if (e.key === "ArrowRight") next();
+            });
+
+            // 进度
+            book.ready.then(() => {
+                book.locations.generate(1000).then(() => {
+                    rendition.on("relocated", (loc) => {
+                        const pct = Math.round(
+                            book.locations.percentageFromCfi(loc.start.cfi) *
+                                100,
+                        );
+                        document.getElementById("progress").textContent =
+                            `进度 ${pct}%`;
+
+                        // 目录高亮
+                        document
+                            .querySelectorAll("#toc-list a")
+                            .forEach((a) => a.classList.remove("active"));
+                        const match = document.querySelector(
+                            `#toc-list a[data-href="${loc.start.href}"]`,
+                        );
+                        if (match) {
+                            match.classList.add("active");
+                            match.scrollIntoView({ block: "nearest" });
+                        }
+                    });
+                });
+            });
+
+            // 目录
+            book.loaded.navigation.then((nav) => {
+                const list = document.getElementById("toc-list");
+                nav.toc.forEach((item) => {
+                    const li = document.createElement("li");
+                    const a = document.createElement("a");
+                    a.textContent = item.label.trim();
+                    a.href = "#";
+                    a.dataset.href = item.href.split("#")[0]; // 用于高亮匹配
+                    a.addEventListener("click", (e) => {
+                        e.preventDefault();
+                        rendition.display(item.href);
+                    });
+                    li.appendChild(a);
+                    list.appendChild(li);
+                });
+            });
+
+            // 目录面板开关
+            document.getElementById("btn-toc").onclick = () => {
+                document.getElementById("toc-panel").classList.toggle("hidden");
+            };
+        </script>
+    </body>
+</html>
