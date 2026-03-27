@@ -1,7 +1,6 @@
 /* ============================================================
    EnglishPod — BBC / Final Draft Screenplay Format
    ============================================================ */
-
 @font-face {
     font-family: "CourierPrimeLocal";
     src:
@@ -28,7 +27,6 @@
     font-weight: normal;
     font-style: italic;
 }
-
 *,
 *::before,
 *::after {
@@ -37,18 +35,14 @@
 
 body {
     font-family:
-        "CourierPrimeLocal", "Courier Prime", "Courier New", Courier, monospace,
-        "Noto Serif SC", "Source Han Serif", "思源宋体 CN", "STSong",
-        "华文宋体", "SimSun", "宋体";
+        "CourierPrimeLocal", "Courier Prime", "Courier New", Courier,
+        monospace，Georgia;
     font-size: 12pt;
     line-height: 1.5;
     color: #111;
     background: #d6d3cc;
     margin: 0;
     padding: 2.5em 0;
-    -webkit-font-smoothing: antialiased;
-    -moz-osx-font-smoothing: grayscale;
-    text-rendering: optimizeLegibility;
 }
 
 .script-page {
@@ -75,6 +69,7 @@ h2 {
     font-weight: bold;
     text-transform: uppercase;
     letter-spacing: 0.04em;
+    color: #555;
     border-top: none;
     padding-top: 0;
     margin: 2em 0 0.6em;
@@ -128,14 +123,14 @@ dt {
     text-align: right;
     white-space: nowrap;
     font-weight: bold;
-    text-transform: uppercase;
+    /* text-transform: uppercase; */
     letter-spacing: 0.08em;
     font-size: 11.5pt;
-    color: #111;
+    color: #222;
     align-self: baseline;
     margin: 0;
     padding: 0.25em 0;
-    border-bottom: 1px dotted #ebebeb;
+    /* border-bottom: 1px dotted #ebebeb; */
 }
 
 dt::after {
@@ -150,7 +145,8 @@ dd {
     grid-column: 2;
     margin: 0;
     padding: 0.25em 0;
-    color: #1a1a1a;
+    color: #333;
+    word-break: break-word;
     align-self: baseline;
     line-height: 1.55;
     border-bottom: 1px dotted #ebebeb;
@@ -178,6 +174,7 @@ dd > i {
     display: block;
     color: #555;
     font-style: italic;
+    word-break: break-word;
     padding-left: 1.2em;
     margin: 0.1em 0;
 }
@@ -187,12 +184,12 @@ dd > i {
 table.vocab-block {
     width: 100%;
     border-collapse: collapse;
-    table-layout: auto; /* 改为 auto，不再固定列宽 */
-    font-size: 11pt;
     margin-bottom: 1.4em;
+    table-layout: auto;
+    font-size: 11pt;
+    line-height: 1.5;
 }
 
-/* 删除 .col-word 和 .col-type 的固定宽度 */
 .col-word {
     width: auto;
 }
@@ -203,9 +200,18 @@ table.vocab-block {
     width: auto;
 }
 
+table.vocab-block th,
+table.vocab-block td {
+    padding: 0.38em 0.8em 0.38em 0;
+    vertical-align: top;
+    border-bottom: 1px dotted #e4e4e4;
+    word-break: break-word;
+    overflow-wrap: break-word;
+}
+
 table.vocab-block th {
     font-weight: bold;
-    color: #1a3a6a;
+    color: #1a5276;
     text-transform: none;
     white-space: nowrap; /* 单词本身不换行 */
     text-align: left;
@@ -215,14 +221,11 @@ table.vocab-block th {
 table.vocab-block td.type {
     color: #888;
     font-style: italic;
-    font-size: 0.9em;
-    white-space: normal; /* 词性允许换行 */
-    padding-right: 1em;
+    white-space: normal;
 }
 
 table.vocab-block td.definition {
-    color: #222;
-    white-space: normal;
+    color: #444;
 }
 
 /* ── 窄屏 ─────────────────────────────────────────────────── */
@@ -254,7 +257,7 @@ table.vocab-block td.definition {
         white-space: normal;
         word-break: break-word;
         padding-bottom: 0.15em;
-        border-bottom: 1px solid #ddd;
+        border-bottom: 1px dotted #ddd;
     }
 
     dl.dialogue-block.long dt::after {
@@ -275,7 +278,7 @@ table.vocab-block td.definition {
     }
 
     table.vocab-block tr {
-        border-bottom: 1px solid #e0e0e0;
+        border-bottom: 1px dotted #e0e0e0;
         padding: 0.55em 0;
     }
 

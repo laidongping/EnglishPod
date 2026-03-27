@@ -4,11 +4,11 @@
          unique-identifier="bookid">
 
   <metadata xmlns:dc="http://purl.org/dc/elements/1.1/">
-    <dc:identifier id="bookid">urn:uuid:f3a870d6-aa6d-45cb-a209-c9e22cb5326d</dc:identifier>
+    <dc:identifier id="bookid">urn:uuid:b4eda08a-d6ec-40ed-af26-d614d65d8d75</dc:identifier>
     <dc:title>EnglishPod Complete Collection</dc:title>
     <dc:creator>EnglishPod</dc:creator>
     <dc:language>en</dc:language>
-    <meta property="dcterms:modified">2026-03-25T08:26:20Z</meta>
+    <meta property="dcterms:modified">2026-03-27T02:30:22Z</meta>
     <meta name="cover" content="cover-image"/>
   </metadata>
 
