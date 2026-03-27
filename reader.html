@@ -4,8 +4,6 @@
         <meta charset="UTF-8" />
         <meta name="viewport" content="width=device-width, initial-scale=1.0" />
         <title>EnglishPod Reader</title>
-        <script src="https://cdn.jsdelivr.net/npm/jszip@3.10.1/dist/jszip.min.js"></script>
-        <script src="https://cdn.jsdelivr.net/npm/epubjs@0.3.93/dist/epub.min.js"></script>
         <style>
             *,
             *::before,
@@ -34,7 +32,6 @@
                 background: #181825;
                 border-bottom: 1px solid #313244;
                 flex-shrink: 0;
-                flex-wrap: wrap;
             }
             #toolbar h1 {
                 font-size: 1rem;
@@ -42,58 +39,73 @@
                 color: #cba6f7;
                 margin-right: auto;
             }
-            #toolbar button,
-            #toolbar select {
+            #toolbar button {
                 background: #313244;
                 color: #cdd6f4;
                 border: 1px solid #45475a;
                 border-radius: 6px;
-                padding: 4px 10px;
+                padding: 4px 12px;
                 font-size: 0.85rem;
                 cursor: pointer;
             }
             #toolbar button:hover {
                 background: #45475a;
             }
-            #progress {
+            #ep-counter {
                 font-size: 0.8rem;
                 color: #6c7086;
             }
 
-            /* ── 主体区域 ── */
+            /* ── 主体 ── */
             #main {
                 display: flex;
                 flex: 1;
                 overflow: hidden;
             }
 
-            /* ── 侧边目录 ── */
+            /* ── 目录侧边栏 ── */
             #toc-panel {
-                width: 260px;
+                width: 280px;
                 background: #181825;
                 border-right: 1px solid #313244;
-                overflow-y: auto;
+                display: flex;
+                flex-direction: column;
                 flex-shrink: 0;
                 transition: width 0.2s;
+                overflow: hidden;
             }
             #toc-panel.hidden {
                 width: 0;
-                overflow: hidden;
             }
-            #toc-panel h2 {
-                font-size: 0.8rem;
-                text-transform: uppercase;
-                letter-spacing: 0.08em;
+
+            #toc-search {
+                padding: 8px 12px;
+                flex-shrink: 0;
+                border-bottom: 1px solid #313244;
+            }
+            #toc-search input {
+                width: 100%;
+                background: #313244;
+                color: #cdd6f4;
+                border: 1px solid #45475a;
+                border-radius: 6px;
+                padding: 5px 10px;
+                font-size: 0.82rem;
+                outline: none;
+            }
+            #toc-search input::placeholder {
                 color: #6c7086;
-                padding: 12px 16px 8px;
             }
+
             #toc-list {
                 list-style: none;
+                overflow-y: auto;
+                flex: 1;
             }
             #toc-list li a {
                 display: block;
-                padding: 6px 16px;
-                font-size: 0.82rem;
+                padding: 7px 14px;
+                font-size: 0.8rem;
                 color: #bac2de;
                 text-decoration: none;
                 border-left: 3px solid transparent;
@@ -111,39 +123,39 @@
                 background: #1e1e2e;
             }
 
-            /* ── 阅读区 ── */
-            #reader-wrap {
+            /* ── iframe 阅读区 ── */
+            #viewer-wrap {
                 flex: 1;
-                display: flex;
-                align-items: stretch;
-                overflow: hidden;
                 position: relative;
+                overflow: hidden;
             }
             #viewer {
-                flex: 1;
+                width: 100%;
+                height: 100%;
+                border: none;
                 background: #fff;
             }
-            /* 翻页按钮 */
+
+            /* ── 翻页按钮 ── */
             .nav-btn {
                 position: absolute;
                 top: 50%;
                 transform: translateY(-50%);
-                background: rgba(30, 30, 46, 0.7);
+                background: rgba(30, 30, 46, 0.65);
                 color: #cdd6f4;
                 border: none;
-                font-size: 1.8rem;
-                width: 40px;
-                height: 80px;
+                font-size: 1.6rem;
+                width: 36px;
+                height: 72px;
                 cursor: pointer;
                 z-index: 10;
                 border-radius: 4px;
                 display: flex;
                 align-items: center;
                 justify-content: center;
-                transition: background 0.15s;
             }
             .nav-btn:hover {
-                background: rgba(203, 166, 247, 0.3);
+                background: rgba(203, 166, 247, 0.35);
             }
             #btn-prev {
                 left: 4px;
@@ -151,90 +163,893 @@
             #btn-next {
                 right: 4px;
             }
-
-            /* ── 加载提示 ── */
-            #loading {
-                position: absolute;
-                inset: 0;
-                display: flex;
-                align-items: center;
-                justify-content: center;
-                background: #fff;
-                color: #888;
-                font-size: 1rem;
-                z-index: 20;
-            }
         </style>
     </head>
     <body>
-        <!-- 工具栏 -->
         <div id="toolbar">
             <h1>📖 EnglishPod</h1>
             <button id="btn-toc">☰ 目录</button>
-            <button id="btn-prev-top">‹ 上一页</button>
-            <button id="btn-next-top">下一页 ›</button>
-            <select id="font-size-select">
-                <option value="100">字号 100%</option>
-                <option value="110">字号 110%</option>
-                <option value="120" selected>字号 120%</option>
-                <option value="140">字号 140%</option>
-                <option value="160">字号 160%</option>
-            </select>
-            <span id="progress">–</span>
-            <a href="./englishpod.epub" download>
-                <button>⬇ 下载 EPUB</button>
-            </a>
+            <button id="btn-prev-top">‹ 上一篇</button>
+            <button id="btn-next-top">下一篇 ›</button>
+            <span id="ep-counter"></span>
         </div>
 
-        <!-- 主体 -->
         <div id="main">
-            <!-- 目录面板 -->
             <nav id="toc-panel">
-                <h2>目录</h2>
+                <div id="toc-search">
+                    <input
+                        type="text"
+                        id="search-input"
+                        placeholder="搜索标题…"
+                    />
+                </div>
                 <ul id="toc-list"></ul>
             </nav>
 
-            <!-- 阅读器 -->
-            <div id="reader-wrap">
-                <div id="loading">正在加载 EPUB…</div>
-                <div id="viewer"></div>
+            <div id="viewer-wrap">
+                <iframe id="viewer" src=""></iframe>
                 <button class="nav-btn" id="btn-prev">‹</button>
                 <button class="nav-btn" id="btn-next">›</button>
             </div>
         </div>
 
         <script>
-            const book = ePub("./englishpod.epub");
-            const rendition = book.renderTo("viewer", {
-                width: "100%",
-                height: "100%",
-                spread: "none",
-                flow: "paginated",
-            });
+            // ── 目录数据（从你的 365 篇文件名生成）──
+            const episodes = [
+                { id: "B0001", title: "B0001 Elementary - Difficult Customer" },
+                { id: "B0002", title: "B0002 Elementary - Calling In Sick" },
+                { id: "C0003", title: "C0003 Daily Life - Hotel Upgrade" },
+                {
+                    id: "C0004",
+                    title: "C0004 The Office - I need an assistant!",
+                },
+                { id: "C0005", title: "C0005 Daily Life - Cut In Line" },
+                { id: "C0006", title: "C0006 The Weekend - Road Trip" },
+                { id: "C0007", title: "C0007 The Office - Virus!" },
+                {
+                    id: "C0008",
+                    title: "C0008 Daily Life - What's your name again?",
+                },
+                { id: "C0009", title: "C0009 The Weekend - Silence please!" },
+                { id: "C0010", title: "C0010 The Office - Driving Sales" },
+                { id: "C0011", title: "C0011 Daily Life - New Guy in Town" },
+                { id: "C0012", title: "C0012 Daily Life - Cleaning the House" },
+                {
+                    id: "C0013",
+                    title: "C0013 The Office - Out Of Control Spending",
+                },
+                { id: "B0014", title: "B0014 Daily Life - I'm in Debt" },
+                {
+                    id: "C0015",
+                    title: "C0015 Daily Life - I'm sorry, I love you",
+                },
+                { id: "B0016", title: "B0016 Daily Life - Turn left here!" },
+                {
+                    id: "B0017",
+                    title: "B0017 Global View - Here Comes the Bride",
+                },
+                { id: "D0018", title: "D0018 Global View - Protest!" },
+                {
+                    id: "C0019",
+                    title: "C0019 The Weekend - Christmas Chronicles I",
+                },
+                {
+                    id: "B0020",
+                    title: "B0020 Daily Life - I Can See Clearly Now",
+                },
+                { id: "C0021", title: "C0021 The Office - What Do You Do?" },
+                {
+                    id: "C0022",
+                    title: "C0022 The Weekend - Christmas Chronicles II",
+                },
+                {
+                    id: "B0023",
+                    title: "B0023 The Office - Making an Appointment",
+                },
+                {
+                    id: "B0024",
+                    title: "B0024 Daily Life - Where should we eat?",
+                },
+                {
+                    id: "D0025",
+                    title: "D0025 The Office - Planning For The Worst",
+                },
+                {
+                    id: "B0026",
+                    title: "B0026 Daily Life - New Year's Resolution",
+                },
+                {
+                    id: "B0027",
+                    title: "B0027 The Office - Asking for Time Off",
+                },
+                {
+                    id: "C0028",
+                    title: "C0028 Daily Life - I'm Sorry, I Love You II",
+                },
+                {
+                    id: "E0029",
+                    title: "E0029 Global View - Investing in Emerging Markets",
+                },
+                { id: "C0030", title: "C0030 Daily Life - New Guy in Town II" },
+                {
+                    id: "B0031",
+                    title: "B0031 The Office - Canceling an Appointment",
+                },
+                {
+                    id: "C0032",
+                    title: "C0032 Daily Life - Opening a Bank Account",
+                },
+                { id: "B0033", title: "B0033 Elementary - Foul!" },
+                {
+                    id: "D0034",
+                    title: "D0034 Global View - Live from Washington",
+                },
+                {
+                    id: "C0035",
+                    title: "C0035 Daily Life - He's not a Good Fit",
+                },
+                {
+                    id: "B0036",
+                    title: "B0036 Daily Life - I'm Sorry, I Love You III",
+                },
+                { id: "C0037", title: "C0037 Intermediate - Chinese New Year" },
+                { id: "C0038", title: "C0038 Daily Life - Buying a Car" },
+                { id: "B0039", title: "B0039 Daily Life - My New Boyfriend" },
+                {
+                    id: "B0040",
+                    title: "B0040 The Office - Can I ask you a favor?",
+                },
+                { id: "C0041", title: "C0041 The Weekend - Movie Trailer" },
+                { id: "B0042", title: "B0042 The Office - I Need More Time" },
+                {
+                    id: "C0043",
+                    title: "C0043 Daily Life - Applying for a Visa",
+                },
+                { id: "B0044", title: "B0044 Daily Life - Small Talk" },
+                {
+                    id: "C0045",
+                    title: "C0045 Intermediate - I'm Sorry I love You IV",
+                },
+                { id: "D0046", title: "D0046 Daily Life - Emergency Room" },
+                {
+                    id: "E0047",
+                    title: "E0047 Advanced - Just In Time Strategy",
+                },
+                { id: "C0048", title: "C0048 Intermediate - Carnival in Rio!" },
+                { id: "C0049", title: "C0049 Daily Life - Daddy Please!" },
+                {
+                    id: "C0050",
+                    title: "C0050 Daily Life - New Guy In Town III",
+                },
+                { id: "C0051", title: "C0051 The Weekend - What a Bargain!" },
+                { id: "C0052", title: "C0052 Daily Life - Pizza Delivary" },
+                { id: "C0053", title: "C0053 The Weekend - Head Chef" },
+                {
+                    id: "C0054",
+                    title: "C0054 Intermediate - I'm Sorry I Love You V",
+                },
+                { id: "C0055", title: "C0055 Intermediate - Hockey" },
+                {
+                    id: "C0056",
+                    title: "C0056 Daily Life - Planning a Bank Robbery",
+                },
+                { id: "C0057", title: "C0057 The Office - Malfunction" },
+                {
+                    id: "C0058",
+                    title: "C0058 Daily Life - This Is Your Captain Speaking",
+                },
+                { id: "E0059", title: "E0059 Advanced - Job Interview I" },
+                { id: "C0060", title: "C0060 Daily Life - New Guy in Town IV" },
+                { id: "C0061", title: "C0061 The Weekend - Swim faster!" },
+                { id: "C0062", title: "C0062 The Office - Job Interview II" },
+                { id: "C0063", title: "C0063 The Office - Receptionist" },
+                {
+                    id: "C0064",
+                    title: "C0064 Daily Life - I'm Sorry I Love You VI",
+                },
+                { id: "C0065", title: "C0065 The Office - Job Interview III" },
+                { id: "C0066", title: "C0066 The Office - Calling The Office" },
+                { id: "C0067", title: "C0067 The Weekend - Soccer" },
+                {
+                    id: "C0068",
+                    title: "C0068 The Office - Groundbreaking Research",
+                },
+                {
+                    id: "C0069",
+                    title: "C0069 Daily Life - How Would You Like Your Eggs?",
+                },
+                {
+                    id: "F0070",
+                    title: "F0070 Advanced Media - Buying Underwear",
+                },
+                { id: "C0071", title: "C0071 The Weekend - Happy Hour" },
+                { id: "C0072", title: "C0072 Intermediate - You Are Fired!" },
+                { id: "C0073", title: "C0073 Daily Life - Which Finger?" },
+                {
+                    id: "C0074",
+                    title: "C0074 Daily Life - What Am I Thinking!",
+                },
+                {
+                    id: "C0075",
+                    title: "C0075 Daily Life - Going To The Dentist",
+                },
+                {
+                    id: "C0076",
+                    title: "C0076 Daily Life - Learning Simple Math",
+                },
+                { id: "C0077", title: "C0077 The Weekend - F1 Racing" },
+                {
+                    id: "C0078",
+                    title: "C0078 The Weekend - International Workers Day",
+                },
+                {
+                    id: "C0079",
+                    title: "C0079 The Weekend - Funky Galaxy Battles",
+                },
+                {
+                    id: "C0080",
+                    title: "C0080 Daily Life - I'm Sorry I Love You VII",
+                },
+                { id: "C0081", title: "C0081 Daily Life - Getting A Hair Cut" },
+                { id: "C0082", title: "C0082 Daily Life - New Guy In Town V" },
+                { id: "C0083", title: "C0083 Daily Life - Using The ATM" },
+                { id: "C0084", title: "C0084 Daily Life - At The Pharmacy" },
+                { id: "C0085", title: "C0085 The Weekend - Baseball" },
+                {
+                    id: "C0086",
+                    title: "C0086 Daily Life - Looking for an Apartment",
+                },
+                {
+                    id: "C0087",
+                    title: "C0087 The Weekend - Star Trek The Lost Generation",
+                },
+                {
+                    id: "C0088",
+                    title: "C0088 Daily Life - Will You Be My Girlfriend?",
+                },
+                { id: "C0089", title: "C0089 Daily Life - At The Airport" },
+                {
+                    id: "C0090",
+                    title: "C0090 Daily Life - I'm Sorry I Love You VIII",
+                },
+                { id: "C0091", title: "C0091 The Weekend - Aliens!" },
+                { id: "C0092", title: "C0092 The Weekend - 1950's" },
+                { id: "C0093", title: "C0093 Intermediate - Volleyball" },
+                { id: "C0094", title: "C0094 Global View - Big Bang Theory" },
+                {
+                    id: "C0095",
+                    title: "C0095 Daily Life - Talking About a Past Event",
+                },
+                { id: "C0096", title: "C0096 The Weekend - 1960's English" },
+                { id: "C0097", title: "C0097 Daily Life - Weather Forecast" },
+                { id: "C0098", title: "C0098 Daily Life - Flattering" },
+                { id: "C0099", title: "C0099 Global View - Movie Review" },
+                {
+                    id: "C0100",
+                    title: "C0100 Daily Life - Where are you from?",
+                },
+                { id: "C0101", title: "C0101 The Weekend - 1970's" },
+                { id: "C0102", title: "C0102 Global View - Global Warming" },
+                { id: "C0103", title: "C0103 Daily Life - Baby, I'm Sorry" },
+                { id: "C0104", title: "C0104 The Weekend - Skiing" },
+                { id: "C0105", title: "C0105 The Office - Job Well Done" },
+                { id: "C0106", title: "C0106 Daily Life - Mobile Phone Plan" },
+                {
+                    id: "C0107",
+                    title: "C0107 Daily Life - Complaining at a Restaurant",
+                },
+                { id: "C0108", title: "C0108 The Office - Bad news, boss." },
+                { id: "C0109", title: "C0109 The Weekend - Breaking Up" },
+                {
+                    id: "C0110",
+                    title: "C0110 Daily Life - Registering for University",
+                },
+                { id: "C0111", title: "C0111 The Weekend - Golf" },
+                { id: "C0112", title: "C0112 Daily Life - Dr. Plumber" },
+                { id: "C0113", title: "C0113 The Office - Sorry I'm Late" },
+                { id: "C0114", title: "C0114 The Weekend - 1980's" },
+                {
+                    id: "C0115",
+                    title: "C0115 Daily Life - I Don't Feel So Good",
+                },
+                {
+                    id: "C0116",
+                    title: "C0116 The Office - You Missed The Deadline!",
+                },
+                {
+                    id: "C0117",
+                    title: "C0117 The Weekend - I'm Sorry I Love You IX",
+                },
+                { id: "C0118", title: "C0118 Daily Life - Baby Talk" },
+                { id: "C0119", title: "C0119 The Weekend - Being Scared" },
+                { id: "C0120", title: "C0120 The Weekend - Boxing" },
+                {
+                    id: "C0121",
+                    title: "C0121 Global View - Presidential Speech",
+                },
+                {
+                    id: "C0122",
+                    title: "C0122 Daily Life - Supermarket Cashier",
+                },
+                { id: "C0123", title: "C0123 The Weekend - 1990's" },
+                { id: "C0124", title: "C0124 Daily Life - Tools" },
+                { id: "C0125", title: "C0125 Daily Life - No Smoking!" },
+                { id: "C0126", title: "C0126 The Weekend - That's Funny!" },
+                { id: "C0127", title: "C0127 The Weekend - I Love That Song!" },
+                {
+                    id: "C0128",
+                    title: "C0128 Daily Life - I'm Sorry I Love You X",
+                },
+                {
+                    id: "C0129",
+                    title: "C0129 Global View - Presidential Speech II",
+                },
+                { id: "C0130", title: "C0130 Daily Life - Going To The Gym" },
+                { id: "C0131", title: "C0131 Daily Life - What if? Part 1" },
+                { id: "C0132", title: "C0132 Daily Life - Mechanic" },
+                { id: "C0133", title: "C0133 Daily Life - Doing Laundry" },
+                { id: "C0134", title: "C0134 Daily Life - Buying a TV" },
+                { id: "C0135", title: "C0135 Daily Life - Cheer Up" },
+                { id: "C0136", title: "C0136 Global View - Gambling" },
+                {
+                    id: "C0137",
+                    title: "C0137 Daily Life - Getting Internet Service",
+                },
+                { id: "C0138", title: "C0138 Daily Life - Renting A Car" },
+                { id: "C0139", title: "C0139 The Weekend - Playing Chess" },
+                { id: "C0140", title: "C0140 Daily Life - Buying a Computer" },
+                { id: "C0141", title: "C0141 Daily Life - What If? Part 2" },
+                { id: "C0142", title: "C0142 The Weekend - What Do I Wear?" },
+                { id: "C0143", title: "C0143 Daily Life - The Butcher" },
+                {
+                    id: "C0144",
+                    title: "C0144 Global View - Capital Punishment",
+                },
+                { id: "C0145", title: "C0145 Daily Life - Chicken Pox" },
+                { id: "C0146", title: "C0146 Global View - Animal Rights" },
+                { id: "C0147", title: "C0147 Daily Life - The Argument" },
+                { id: "C0148", title: "C0148 Daily Life - Paranoid" },
+                { id: "C0149", title: "C0149 Daily Life - Moving" },
+                { id: "C0150", title: "C0150 The Weekend - Bug Spray" },
+                {
+                    id: "E0151",
+                    title: "E0151 Advanced - Darwin's Theory Of Evolution",
+                },
+                { id: "C0152", title: "C0152 The Office - Cut It Out" },
+                { id: "C0153", title: "C0153 Daily Life - Homesick" },
+                { id: "C0154", title: "C0154 The Weekend - Rock Band" },
+                { id: "C0155", title: "C0155 The Weekend - Bachelor Party" },
+                { id: "C0156", title: "C0156 The Weekend - Scary Story" },
+                { id: "C0157", title: "C0157 The Weekend - Trick Or Treat" },
+                { id: "C0158", title: "C0158 Global View - All Saints Day" },
+                { id: "C0159", title: "C0159 Daily Life - Getting Flowers" },
+                { id: "C0160", title: "C0160 Global View - Health Insurance" },
+                { id: "C0161", title: "C0161 Daily Life - Computer Games" },
+                { id: "C0162", title: "C0162 Global View - Veteran's Day" },
+                { id: "C0163", title: "C0163 Global View - Social Security" },
+                { id: "C0164", title: "C0164 Daily Life - Apology Letter" },
+                { id: "C0165", title: "C0165 Daily Life - Asking For A Loan" },
+                { id: "C0166", title: "C0166 Daily Life - Dr. Botox" },
+                {
+                    id: "C0167",
+                    title: "C0167 Daily Life - Learning How To Drive",
+                },
+                {
+                    id: "C0168",
+                    title: "C0168 The Weekend - Cooking A Thanksgiving Dinner",
+                },
+                { id: "C0169", title: "C0169 The Weekend - Roller Coaster" },
+                { id: "C0170", title: "C0170 Daily Life - Wedding Doubts" },
+                { id: "C0171", title: "C0171 The Weekend - Buying a Camera" },
+                { id: "C0172", title: "C0172 Daily Life - Dry Cleaners" },
+                { id: "C0173", title: "C0173 The Office - Preparing a Budget" },
+                {
+                    id: "C0174",
+                    title: "C0174 The Weekend - Getting a manicure",
+                },
+                {
+                    id: "C0175",
+                    title: "C0175 Global View - New Years Resolution",
+                },
+                { id: "C0176", title: "C0176 Daily Life - Heating" },
+                {
+                    id: "C0177",
+                    title: "C0177 The Weekend - Decorating a Christmas Tree",
+                },
+                {
+                    id: "C0178",
+                    title: "C0178 Daily Life - Finding the perfect present",
+                },
+                { id: "C0179", title: "C0179 Intermediate - Silent Night" },
+                { id: "B0180", title: "B0180 Elementary - Jingle Bells" },
+                { id: "C0181", title: "C0181 Daily Life - Christmas Day" },
+                { id: "C0182", title: "C0182 Global View - Boxing Day" },
+                { id: "C0183", title: "C0183 Daily Life - Winter Clothes" },
+                { id: "C0184", title: "C0184 Daily Life - Fresh Start" },
+                { id: "C0185", title: "C0185 The Weekend - Farm Animals" },
+                { id: "C0186", title: "C0186 The Office - Business Plan" },
+                { id: "C0187", title: "C0187 Daily Life - Going On A Diet" },
+                { id: "C0188", title: "C0188 The Office - Asking For A Raise" },
+                {
+                    id: "C0189",
+                    title: "C0189 Daily Life - Buying A New Mobile Phone",
+                },
+                { id: "C0190", title: "C0190 The Weekend - Family Barbecue" },
+                {
+                    id: "C0191",
+                    title: "C0191 Global View - Daylight Savings Time",
+                },
+                { id: "C0192", title: "C0192 Global View - Natural Disasters" },
+                {
+                    id: "C0193",
+                    title: "C0193 Daily Life - Building Your Dream Home",
+                },
+                { id: "C0194", title: "C0194 The Weekend - Stir Fry" },
+                { id: "C0195", title: "C0195 Global View - Job Hunting" },
+                {
+                    id: "C0196",
+                    title: "C0196 Daily Life - Going To The Tailor",
+                },
+                { id: "C0197", title: "C0197 Global View - Calling 911" },
+                { id: "C0198", title: "C0198 Daily Life - Applying CPR" },
+                {
+                    id: "C0199",
+                    title: "C0199 Global View - Learning About First Aid",
+                },
+                { id: "C0200", title: "C0200 Daily Life - Junk Food" },
+                { id: "C0201", title: "C0201 Daily Life - At The Post Office" },
+                {
+                    id: "C0202",
+                    title: "C0202 The Weekend - Asking For Directions",
+                },
+                {
+                    id: "C0203",
+                    title: "C0203 Daily Life -  Calling Tech Support",
+                },
+                {
+                    id: "C0204",
+                    title: "C0204 Global View - Understanding a Trial",
+                },
+                { id: "C0205", title: "C0205 The Office - Closing The Deal" },
+                {
+                    id: "C0206",
+                    title: "C0206 Daily Life - Talking To Your Roomate",
+                },
+                { id: "C0207", title: "C0207 Daily Life - Shopping Online" },
+                {
+                    id: "C0208",
+                    title: "C0208 Global View - Understanding The Stock Market",
+                },
+                { id: "C0209", title: "C0209 Daily Life - Office Gossip" },
+                {
+                    id: "C0210",
+                    title: "C0210 Daily Life - Meeting the In-laws",
+                },
+                {
+                    id: "C0211",
+                    title: "C0211 The Weekend - Playing Board Games",
+                },
+                {
+                    id: "C0212",
+                    title: "C0212 Global View - Last Will And Testament",
+                },
+                {
+                    id: "C0213",
+                    title: "C0213 Daily Life - Funeral Arrangements",
+                },
+                {
+                    id: "C0214",
+                    title: "C0214 Daily Life - Describing Personalities",
+                },
+                { id: "C0215", title: "C0215 The Weekend - At the Deli" },
+                { id: "C0216", title: "C0216 Daily Life - Health Food" },
+                { id: "C0217", title: "C0217 Global View - Volunteering" },
+                { id: "C0218", title: "C0218 Daily Life - Divorce" },
+                { id: "C0219", title: "C0219 Global View - Baby Shower" },
+                { id: "C0220", title: "C0220 Daily Life - New Furniture" },
+                { id: "C0221", title: "C0221 Daily Life - Car Trouble" },
+                { id: "C0222", title: "C0222 Global View - Carbon Footprint" },
+                { id: "C0223", title: "C0223 Daily Life - Facial Hair" },
+                { id: "C0224", title: "C0224 Global View - Crime Scene" },
+                { id: "C0225", title: "C0225 The Weekend - Planning A Crime" },
+                { id: "C0226", title: "C0226 Global View - Fundraiser" },
+                { id: "C0227", title: "C0227 Daily Life - Wedding Planning" },
+                {
+                    id: "C0228",
+                    title: "C0228 The Weekend - Going to the Beach",
+                },
+                { id: "C0229", title: "C0229 Daily Life - Buying Men's Shoes" },
+                { id: "C0230", title: "C0230 The Weekend - Gardening" },
+                {
+                    id: "C0231",
+                    title: "C0231 Daily Life - Buying Women's Shoes",
+                },
+                { id: "C0232", title: "C0232 Daily Life - Toys" },
+                { id: "C0233", title: "C0233 Global View - Forex" },
+                {
+                    id: "C0234",
+                    title: "C0234 Daily Life - Going to the Doctor",
+                },
+                {
+                    id: "C0235",
+                    title: "C0235 The Office - Interview Skills Part 1 - The Introduction",
+                },
+                { id: "C0236", title: "C0236 Daily Life - Trying To Sleep" },
+                { id: "C0237", title: "C0237 Daily Life - Morning Routine" },
+                {
+                    id: "C0238",
+                    title: "C0238 The Office - Interview Skills Part 2 - Discussing Your Background",
+                },
+                { id: "C0239", title: "C0239 The Weekend - Adventure Sports" },
+                { id: "C0240", title: "C0240 Daily Life - Getting A Pet" },
+                {
+                    id: "C0241",
+                    title: "C0241 The Office - Interview Skills 3 - Education Background",
+                },
+                {
+                    id: "C0242",
+                    title: "C0242 Global View - Learning The Piano",
+                },
+                {
+                    id: "C0243",
+                    title: "C0243 The Weekend - Talking to a Travel Agent",
+                },
+                {
+                    id: "C0244",
+                    title: "C0244 The Office - Interview Skills 4 - Talking About Work Experience",
+                },
+                {
+                    id: "C0245",
+                    title: "C0245 The Weekend - Getting A Subscription",
+                },
+                {
+                    id: "C0246",
+                    title: "C0246 Daily Life - At The Train Station",
+                },
+                {
+                    id: "C0247",
+                    title: "C0247 The Office - Interview Skills 5 - Discussing Reasons For Leaving Previous Position",
+                },
+                { id: "C0248", title: "C0248 Daily Life - Dinnerware" },
+                { id: "C0249", title: "C0249 The Weekend - Making A Sandwich" },
+                {
+                    id: "C0250",
+                    title: "C0250 The Office - Interview Skills 6 - Describing Ones Strengths",
+                },
+                { id: "C0251", title: "C0251 The Weekend - Buying Makeup" },
+                { id: "C0252", title: "C0252 Global View - Contraceptives" },
+                {
+                    id: "C0253",
+                    title: "C0253 The Office - Interview Skills 7 -  Describing Ones Weaknesses",
+                },
+                { id: "C0254", title: "C0254 The Weekend - Making Breakfast" },
+                {
+                    id: "C0255",
+                    title: "C0255 Global View - The Miracle Of Life",
+                },
+                {
+                    id: "C0256",
+                    title: "C0256 The Office - Interview Skills 8 - Discussing Salary and Benefits",
+                },
+                { id: "C0257", title: "C0257 Global View - The World Cup" },
+                { id: "C0258", title: "C0258 Daily Life - You're Grounded!" },
+                {
+                    id: "C0259",
+                    title: "C0259 The Office - Interview Skills 9 - Asking For Information About The Position",
+                },
+                { id: "C0260", title: "C0260 The Weekend - Guns" },
+                {
+                    id: "C0261",
+                    title: "C0261 Daily Life - Describing Someone's Face",
+                },
+                {
+                    id: "C0262",
+                    title: "C0262 The Office - Interview Skills 10 - Concluding The Interview",
+                },
+                { id: "C0263", title: "C0263 Global View - Nationalities" },
+                { id: "C0264", title: "C0264 Daily Life - Toothache" },
+                { id: "C0265", title: "C0265 The Weekend - Pest Control" },
+                { id: "C0266", title: "C0266 Daily Life - Weather Report" },
+                {
+                    id: "C0267",
+                    title: "C0267 Daily Life - Making A Bank Transfer",
+                },
+                { id: "C0268", title: "C0268 The Office - Purchasing Manager" },
+                { id: "C0269", title: "C0269 The Office - Marketing Plan" },
+                { id: "C0270", title: "C0270 Daily Life - Buying A Suit" },
+                {
+                    id: "C0271",
+                    title: "C0271 The Office - Presentation Series 1 - The Overview and the Agenda",
+                },
+                { id: "C0272", title: "C0272 Daily Life - Getting A Nanny" },
+                {
+                    id: "C0273",
+                    title: "C0273 The Weekend - The Zodiac and Horoscopes",
+                },
+                {
+                    id: "C0274",
+                    title: "C0274 The Office - Presentation Series 2 - Talking about numbers, charts and graphs",
+                },
+                { id: "C0275", title: "C0275 Daily Life - Kitchen Appliances" },
+                { id: "C0276", title: "C0276 Daily Life - Telephone Services" },
+                {
+                    id: "C0277",
+                    title: "C0277 The Office - Presentation Series 3 - Making Comparisons",
+                },
+                {
+                    id: "C0278",
+                    title: "C0278 Global View - At The Car Dealership",
+                },
+                { id: "C0279", title: "C0279 Global View - Drugs" },
+                {
+                    id: "C0280",
+                    title: "C0280 The Office - Presentation Series 4 -  Discussing the Competition",
+                },
+                { id: "C0281", title: "C0281 The Weekend - Breaking Up" },
+                { id: "C0282", title: "C0282 Global View - Physics" },
+                {
+                    id: "C0283",
+                    title: "C0283 The Office - Presentation Series 5 - Deferring Questions",
+                },
+                { id: "C0284", title: "C0284 Daily Life - Tune Up" },
+                { id: "C0285", title: "C0285 Daily Life - Handyman" },
+                {
+                    id: "C0286",
+                    title: "C0286 The Office - Presentation Series 6 - Addressing the Audience",
+                },
+                {
+                    id: "C0287",
+                    title: "C0287 Daily Life - High School Reunion",
+                },
+                { id: "C0288", title: "C0288 The Weekend - Getting A Tattoo" },
+                {
+                    id: "C0289",
+                    title: "C0289 The Office - Presentation Series 7 - Handling Technical Problems",
+                },
+                { id: "C0290", title: "C0290 The Weekend - Buying Jewelery" },
+                {
+                    id: "C0291",
+                    title: "C0291 Daily Life - Ordering Chinese Food",
+                },
+                {
+                    id: "C0292",
+                    title: "C0292 The Office - Presentation Series 8 - Common Presentation Mistakes",
+                },
+                { id: "F0293", title: "F0293 Advanced Media - Cheese Lovers" },
+                {
+                    id: "C0294",
+                    title: "C0294 Daily Life - Picking A University",
+                },
+                {
+                    id: "C0295",
+                    title: "C0295 The Office - Presentation Series 9 - Summary and Conclusion",
+                },
+                {
+                    id: "C0296",
+                    title: "C0296 Global View - Vegan Or Vegetarian?",
+                },
+                {
+                    id: "C0297",
+                    title: "C0297 The Weekend - Ordering At An Italian Restaurant",
+                },
+                {
+                    id: "C0298",
+                    title: "C0298 The Office - Presentation Series 10 - The Q and A Session",
+                },
+                {
+                    id: "C0299",
+                    title: "C0299 Daily Life - Returning A Product",
+                },
+                { id: "C0300", title: "C0300 Daily Life - Online Dating" },
+                { id: "C0301", title: "C0301 The Weekend - Vampires" },
+                { id: "C0302", title: "C0302 Global View - Phobias" },
+                { id: "C0303", title: "C0303 Daily Life - Mexican Food" },
+                { id: "C0304", title: "C0304 Daily Life - Neat Freak" },
+                { id: "C0305", title: "C0305 The Weekend - Bowling" },
+                { id: "C0306", title: "C0306 The Weekend - Pick Up Lines" },
+                {
+                    id: "C0307",
+                    title: "C0307 The Office - Small Talk Series - Showing Interest",
+                },
+                { id: "C0308", title: "C0308 Daily Life - Boxers and Briefs" },
+                { id: "C0309", title: "C0309 Global View - Indian Food" },
+                { id: "C0310", title: "C0310 The Office - Small Talk 2" },
+                { id: "C0311", title: "C0311 The Office - Sorry I'm Late" },
+                { id: "C0312", title: "C0312 The Weekend - Ordering Drinks" },
+                { id: "C0313", title: "C0313 The Office - Small talk 3" },
+                {
+                    id: "C0314",
+                    title: "C0314 Daily Life - Making A Collect Call",
+                },
+                {
+                    id: "C0315",
+                    title: "C0315 The Office - Sending A Quote Via Email",
+                },
+                {
+                    id: "C0316",
+                    title: "C0316 Daily Life - Small Talk Series 4 - Discussing Recent Workevents",
+                },
+                { id: "C0317", title: "C0317 The Office - First Paycheck" },
+                { id: "C0318", title: "C0318 Global View - Allergies" },
+                {
+                    id: "C0319",
+                    title: "C0319 Daily Life - Small Talk 5 - Brief Talk With A Stranger",
+                },
+                { id: "C0320", title: "C0320 Global View - Taking The GMAT" },
+                { id: "C0321", title: "C0321 Global View - Thai Food" },
+                {
+                    id: "C0322",
+                    title: "C0322 The Office - Small Talk 6 - Talking About Yourself",
+                },
+                { id: "C0323", title: "C0323 Daily Life - Cancelled Flight" },
+                {
+                    id: "C0324",
+                    title: "C0324 Global View - Thanksgiving Dinner",
+                },
+                {
+                    id: "C0325",
+                    title: "C0325 The Office - Small Talk 7 - Talking About A Trip",
+                },
+                { id: "C0326", title: "C0326 Daily Life - Report Card" },
+                {
+                    id: "C0327",
+                    title: "C0327 Daily Life - Buying A Pair Of Jeans",
+                },
+                {
+                    id: "C0328",
+                    title: "C0328 The Office - Small Talk 8 - Talking About Work",
+                },
+                {
+                    id: "C0329",
+                    title: "C0329 Daily Life - Going To The Bakery",
+                },
+                { id: "C0330", title: "C0330 The Weekend - Fortune Telling" },
+                {
+                    id: "C0331",
+                    title: "C0331 The Office - Small Talk 9 - Talking About The Weather",
+                },
+                {
+                    id: "C0332",
+                    title: "C0332 Daily Life - Setting Up Your Voice mail Message",
+                },
+                { id: "C0333", title: "C0333 Global View - Human Anatmoy" },
+                {
+                    id: "C0334",
+                    title: "C0334 The Office - Small Talk 10 - General Talk",
+                },
+                {
+                    id: "C0335",
+                    title: "C0335 The Weekend - Going To The Playground",
+                },
+                {
+                    id: "C0336",
+                    title: "C0336 Daily Life - Christmas Traditions",
+                },
+                {
+                    id: "C0337",
+                    title: "C0337 Global View - The Night Before Christmas",
+                },
+                { id: "C0338", title: "C0338 Daily Life - Having Leftovers" },
+                {
+                    id: "C0339",
+                    title: "C0339 Global View - Parent Teacher Conference",
+                },
+                { id: "C0340", title: "C0340 Global View - Happy New Year!" },
+                { id: "C0341", title: "C0341 Daily Life - Baking A Cake" },
+                { id: "C0342", title: "C0342 Global View - At The Library" },
+                { id: "C0343", title: "C0343 Daily Life - Seafood Dinner" },
+                {
+                    id: "C0344",
+                    title: "C0344 Global View - Booking A Hotel Room",
+                },
+                { id: "C0345", title: "C0345 Daily Life - Working Out" },
+                { id: "C0346", title: "C0346 Global View - All About Wines" },
+                {
+                    id: "C0347",
+                    title: "C0347 Global View - Immigration and Customs",
+                },
+                {
+                    id: "C0348",
+                    title: "C0348 The Weekend - Talking About Skincare",
+                },
+                { id: "C0349", title: "C0349 Global View - Chinese Medicine" },
+                {
+                    id: "C0350",
+                    title: "C0350 Daily Life - Talking About Relatives",
+                },
+                { id: "C0351", title: "C0351 Daily Life - Vaccinations" },
+                {
+                    id: "C0352",
+                    title: "C0352 Global View - The 7 Wonders Of The World",
+                },
+                { id: "C0353", title: "C0353 Global View - College Life" },
+                { id: "C0354", title: "C0354 Global View - Homeschooling" },
+                { id: "C0355", title: "C0355 Daily Life - Lending Money" },
+                { id: "C0356", title: "C0356 Daily Life - Coins and Money" },
+                {
+                    id: "C0357",
+                    title: "C0357 Daily Life - Making A Dinner Reservation",
+                },
+                { id: "C0358", title: "C0358 Daily Life - Text Me" },
+                { id: "C0359", title: "C0359 Global View - E-mail Scam" },
+                { id: "C0360", title: "C0360 Global View - Urban Legends" },
+                { id: "C0361", title: "C0361 Daily Life - Fast Food" },
+                {
+                    id: "C0362",
+                    title: "C0362 Daily Life - What Mood Are You In?",
+                },
+                {
+                    id: "C0363",
+                    title: "C0363 Daily Life - Living With Your Parents",
+                },
+                { id: "C0364", title: "C0364 Daily Life - Hiring Help" },
+                { id: "C0365", title: "C0365 Daily Life - Household Chores" },
+            ];
 
-            // 初始显示
-            rendition.display().then(() => {
-                document.getElementById("loading").style.display = "none";
-            });
+            // 文件路径规则：episodes/englishpod_XXXX.html
+            function epPath(id) {
+                const num = id.slice(1); // "0001"
+                return `episodes/englishpod_${num}.html`;
+            }
 
-            // 字体大小
-            const fontSelect = document.getElementById("font-size-select");
-            fontSelect.addEventListener("change", () => {
-                rendition.themes.fontSize(fontSelect.value + "%");
-            });
-            rendition.themes.fontSize("120%");
+            let current = 0;
 
-            // 翻页
+            // 渲染目录
+            const tocList = document.getElementById("toc-list");
+            function renderToc(filter = "") {
+                tocList.innerHTML = "";
+                episodes.forEach((ep, i) => {
+                    if (
+                        filter &&
+                        !ep.title.toLowerCase().includes(filter.toLowerCase())
+                    )
+                        return;
+                    const li = document.createElement("li");
+                    const a = document.createElement("a");
+                    a.textContent = `${i + 1}. ${ep.title}`;
+                    a.href = "#";
+                    a.dataset.index = i;
+                    if (i === current) a.classList.add("active");
+                    a.addEventListener("click", (e) => {
+                        e.preventDefault();
+                        goTo(i);
+                    });
+                    li.appendChild(a);
+                    tocList.appendChild(li);
+                });
+            }
+
+            function goTo(index) {
+                current = index;
+                const ep = episodes[index];
+                document.getElementById("viewer").src = epPath(ep.id);
+                document.getElementById("ep-counter").textContent =
+                    `${index + 1} / ${episodes.length}`;
+                renderToc(document.getElementById("search-input").value);
+                // 高亮滚动到可见
+                const active = tocList.querySelector("a.active");
+                if (active) active.scrollIntoView({ block: "nearest" });
+            }
+
             function prev() {
-                rendition.prev();
+                if (current > 0) goTo(current - 1);
             }
             function next() {
-                rendition.next();
+                if (current < episodes.length - 1) goTo(current + 1);
             }
+
             document.getElementById("btn-prev").onclick = prev;
             document.getElementById("btn-next").onclick = next;
             document.getElementById("btn-prev-top").onclick = prev;
             document.getElementById("btn-next-top").onclick = next;
+            document.getElementById("btn-toc").onclick = () => {
+                document.getElementById("toc-panel").classList.toggle("hidden");
+            };
+            document
+                .getElementById("search-input")
+                .addEventListener("input", (e) => {
+                    renderToc(e.target.value);
+                });
 
             // 键盘翻页
             document.addEventListener("keydown", (e) => {
@@ -242,54 +1057,9 @@
                 if (e.key === "ArrowRight") next();
             });
 
-            // 进度
-            book.ready.then(() => {
-                book.locations.generate(1000).then(() => {
-                    rendition.on("relocated", (loc) => {
-                        const pct = Math.round(
-                            book.locations.percentageFromCfi(loc.start.cfi) *
-                                100,
-                        );
-                        document.getElementById("progress").textContent =
-                            `进度 ${pct}%`;
-
-                        // 目录高亮
-                        document
-                            .querySelectorAll("#toc-list a")
-                            .forEach((a) => a.classList.remove("active"));
-                        const match = document.querySelector(
-                            `#toc-list a[data-href="${loc.start.href}"]`,
-                        );
-                        if (match) {
-                            match.classList.add("active");
-                            match.scrollIntoView({ block: "nearest" });
-                        }
-                    });
-                });
-            });
-
-            // 目录
-            book.loaded.navigation.then((nav) => {
-                const list = document.getElementById("toc-list");
-                nav.toc.forEach((item) => {
-                    const li = document.createElement("li");
-                    const a = document.createElement("a");
-                    a.textContent = item.label.trim();
-                    a.href = "#";
-                    a.dataset.href = item.href.split("#")[0]; // 用于高亮匹配
-                    a.addEventListener("click", (e) => {
-                        e.preventDefault();
-                        rendition.display(item.href);
-                    });
-                    li.appendChild(a);
-                    list.appendChild(li);
-                });
-            });
-
-            // 目录面板开关
-            document.getElementById("btn-toc").onclick = () => {
-                document.getElementById("toc-panel").classList.toggle("hidden");
-            };
+            // 初始化
+            renderToc();
+            goTo(0);
         </script>
     </body>
 </html>
