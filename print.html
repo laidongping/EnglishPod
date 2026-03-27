@@ -8,11 +8,11 @@
     </head>
     <body class="col-1 font-mono">
         <div id="print-toolbar">
-            <button id="btn-toc" onclick="toggleToc()">&#9776; TOC</button>
+            <button id="btn-toc" onclick="toggleToc()">&#9776;</button>
             <span class="sep"></span>
             <label>级别：</label>
             <select id="filter-level" onchange="applyFilter()">
-                <option value="">全部</option>
+                <option value="">All</option>
                 <option value="Elementary">B·Elementary</option>
                 <option value="Intermediate">C·Intermediate</option>
                 <option value="Upper-Intermediate">D·Upper-Intermediate</option>
@@ -21,7 +21,7 @@
             </select>
             <label>题材：</label>
             <select id="filter-category" onchange="applyFilter()">
-                <option value="">全部</option>
+                <option value="">All</option>
                 <option value="Daily Life">Daily Life</option>
                 <option value="The Office">The Office</option>
                 <option value="The Weekend">The Weekend</option>
@@ -30,28 +30,31 @@
             </select>
             <span id="filter-count"></span>
             <span class="sep"></span>
-            <label>栏：</label>
-            <button id="btn-col1" class="active" onclick="setCol(1)">单</button>
-            <button id="btn-col2" onclick="setCol(2)">双</button>
+            <label></label>
+            <button id="btn-col1" class="active" onclick="setCol(1)">
+                单栏
+            </button>
+            <button id="btn-col2" onclick="setCol(2)">双栏</button>
             <span class="sep"></span>
-            <label>词汇：</label>
+            <label>词汇:</label>
             <button id="btn-vocab-show" class="active" onclick="setVocab(true)">
                 显
             </button>
             <button id="btn-vocab-hide" onclick="setVocab(false)">隐</button>
             <span class="sep"></span>
-            <label>A：</label>
+            <label>字体:</label>
             <button id="btn-font-mono" class="active" onclick="setFont('mono')">
                 等宽
             </button>
             <button id="btn-font-serif" onclick="setFont('serif')">衬线</button>
-            <button id="btn-font-sans" onclick="setFont('sans')">无衬线</button>
-            <span id="font-size-label">8.5pt</span>
+            <button id="btn-font-sans" onclick="setFont('sans')">黑体</button>
+            <label>大小:</label>
             <button id="btn-font-smaller" onclick="changeFontSize(-1)">
                 A-
             </button>
-
+            <span id="font-size-label">8.5pt</span>
             <button id="btn-font-bigger" onclick="changeFontSize(1)">A+</button>
+
             <span class="sep"></span>
             <button class="btn-print" onclick="window.print()">
                 &#128438; 打印|PDF
@@ -63566,6 +63569,36 @@
                     .classList.remove("active");
                 document.body.classList.remove("toc-open");
             }
+            function applyFilter() {
+                var level = document.getElementById("filter-level").value;
+                var category = document.getElementById("filter-category").value;
+                var pages = document.querySelectorAll(".print-page");
+                var countEl = document.getElementById("filter-count");
+                var visible = 0;
+                var total = pages.length;
+
+                pages.forEach(function (page) {
+                    var tagLevel = page.querySelector(".tag-level");
+                    var tagCategory = page.querySelector(".tag-category");
+                    var pageLevel = tagLevel ? tagLevel.textContent.trim() : "";
+                    var pageCategory = tagCategory
+                        ? tagCategory.textContent.trim()
+                        : "";
+                    var show =
+                        (!level || pageLevel === level) &&
+                        (!category || pageCategory === category);
+                    page.classList.toggle("filtered-out", !show);
+                    if (show) visible++;
+                });
+
+                if (countEl) {
+                    countEl.textContent =
+                        visible === total
+                            ? "共 " + total + " 课"
+                            : visible + " / " + total + " 课";
+                }
+            }
+
             function setActive(nodes, id) {
                 nodes.forEach(function (b) {
                     b.classList.remove("active");
