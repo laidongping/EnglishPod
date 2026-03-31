@@ -1,0 +1,625 @@
+/* ============================================================
+   CODEX MODERNA  v4
+   古典印刷 × 现代极简
+   中文注释 · 选项开关 · 墨水晕染
+   ============================================================ */
+
+@import url("https://fonts.googleapis.com/css2?family=Courier+Prime:ital,wght@0,400;0,700;1,400;1,700&family=IM+Fell+English:ital@0;1&display=swap");
+
+*,
+*::before,
+*::after {
+    box-sizing: border-box;
+    margin: 0;
+    padding: 0;
+}
+
+/* ============================================================
+   ██  设计令牌
+       修改这里控制整体风格
+   ============================================================ */
+:root {
+    /* --- 纸面与背景 --- */
+    --ground: #f7f4ee; /* 页面底色：米白 */
+    --field: #e8e4dc; /* 页外背景：暖灰 */
+
+    /* --- 墨水色阶 --- */
+    --ink-0: #1a1612; /* 全墨：标题、装订线 */
+    --ink-1: #2e2820; /* 深墨：正文 */
+    --ink-2: #5a4e3e; /* 中墨：次要文字 */
+    --ink-3: #8a7a68; /* 淡墨：注释、页码 */
+
+    /* --- 红色系（朱砂 / rubric）--- */
+    /* ⚙ 选项：注释掉整组可切换为纯黑模式 */
+    --rubric: #8b1a0e;
+    --rubric-mid: #a82318;
+    --rubric-pale: #c9907f;
+    --rubric-rule: rgba(139, 26, 14, 0.22);
+
+    /* --- 绿色系（铜绿 / verdigris）--- */
+    /* ⚙ 选项：注释掉可切换为墨绿 #2a4a3e */
+    --verdigris: #2a5c4e;
+    --verdigris-bg: rgba(42, 92, 78, 0.04);
+    --verdigris-bd: rgba(42, 92, 78, 0.28);
+
+    /* --- 线条 --- */
+    --rule-heavy: rgba(26, 22, 18, 0.55); /* 装订线、分隔线 */
+    --rule-mid: rgba(26, 22, 18, 0.1); /* 对话行间线 */
+    --rule-light: rgba(26, 22, 18, 0.1); /* 词汇表行线 */
+
+    /* --- 墨水晕染参数 --- */
+    /* ⚙ 选项 A：标准晕染（默认）*/
+   /* --bleed-x: 0.4px;
+    --bleed-y: 0.35px;
+    --bleed-r: 0.6px;
+    --bleed-a: 0.4;  */
+
+    /* ⚙ 选项 B：轻晕染——将下方三行取消注释并注释掉选项A */
+     --bleed-x: 0.2px; --bleed-y: 0.2px; --bleed-r: 0.3px; --bleed-a: 0.22; 
+
+
+/* ⚙ 选项：纯黑 / 无彩色模式
+   取消注释以下块，红色系全部回退为墨色 */
+/*
+:root {
+  --rubric:      var(--ink-0);
+  --rubric-mid:  var(--ink-1);
+  --rubric-pale: var(--ink-3);
+  --rubric-rule: rgba(26, 22, 18, 0.18);
+  --verdigris:   var(--ink-2);
+  --verdigris-bg: rgba(26, 22, 18, 0.03);
+  --verdigris-bd: rgba(26, 22, 18, 0.18);
+}
+*/
+
+/* ============================================================
+   ██  墨水晕染工具类
+       text-shadow 三层叠加：主压印 + 侧溢 + 环境
+   ============================================================ */
+
+/* 正文晕染（中性墨） */
+.ink {
+    text-shadow:
+        var(--bleed-x) var(--bleed-y) var(--bleed-r)
+            rgba(26, 22, 18, var(--bleed-a)),
+        calc(var(--bleed-x) * -0.5) calc(var(--bleed-y) * 0.8)
+            calc(var(--bleed-r) * 0.7)
+            rgba(26, 22, 18, calc(var(--bleed-a) * 0.45)),
+        calc(var(--bleed-x) * 0.3) calc(var(--bleed-y) * -0.4)
+            calc(var(--bleed-r) * 0.5)
+            rgba(26, 22, 18, calc(var(--bleed-a) * 0.3));
+}
+
+/* 朱砂晕染（rubric 元素） */
+.ink-rubric {
+    text-shadow:
+        var(--bleed-x) var(--bleed-y) var(--bleed-r)
+            rgba(139, 26, 14, calc(var(--bleed-a) * 1.1)),
+        calc(var(--bleed-x) * -0.5) calc(var(--bleed-y) * 0.8)
+            calc(var(--bleed-r) * 0.6)
+            rgba(139, 26, 14, calc(var(--bleed-a) * 0.4)),
+        calc(var(--bleed-x) * 0.3) calc(var(--bleed-y) * -0.4)
+            calc(var(--bleed-r) * 0.5)
+            rgba(139, 26, 14, calc(var(--bleed-a) * 0.25));
+}
+
+/* 铜绿晕染（stage direction） */
+.ink-verdigris {
+    text-shadow:
+        var(--bleed-x) var(--bleed-y) var(--bleed-r)
+            rgba(42, 92, 78, calc(var(--bleed-a) * 0.9)),
+        calc(var(--bleed-x) * -0.5) calc(var(--bleed-y) * 0.8)
+            calc(var(--bleed-r) * 0.6)
+            rgba(42, 92, 78, calc(var(--bleed-a) * 0.35));
+}
+
+/* ============================================================
+   ██  基础
+   ============================================================ */
+html {
+    font-size: 16px;
+}
+
+body {
+    background: var(--field);
+    font-family: "Courier Prime", "Courier New", Courier, monospace;
+    font-size: 1rem;
+    line-height: 1.75;
+    color: var(--ink-1);
+    padding: 4rem 1rem;
+}
+
+/* ============================================================
+   ██  页面容器
+       一张纸。光从左上角来。装订线是唯一的实体边框。
+   ============================================================ */
+.script-page {
+    position: relative;
+    max-width: 680px;
+    margin: 0 auto;
+    /* 左宽（说话人页边）右窄（正文） */
+    padding: 4.5rem 3.8rem 5.5rem 5.4rem;
+    background: var(--ground);
+    
+
+    /* ⚙ 选项：纸张纹理，纸张阴影
+     注释掉 box-shadow 可得到完全平面效果 */
+        
+    box-shadow:
+        inset 1px 1px 0 rgba(255, 255, 255, 0.85),
+        inset -1px -1px 0 rgba(0, 0, 0, 0.04),
+        0 1px 2px rgba(0, 0, 0, 0.07),
+        0 6px 20px rgba(0, 0, 0, 0.09),
+        0 22px 50px rgba(0, 0, 0, 0.09);
+    
+    /* Faint aged-paper tint */
+  background-image:
+    radial-gradient(ellipse at 20% 5%, rgba(255,248,220,0.5) 0%, transparent 60%),
+    radial-gradient(ellipse at 80% 95%, rgba(240,232,210,0.4) 0%, transparent 55%); 
+
+    /* 装订线： */
+     border-left: 5px solid var(--ink-2); 
+     
+}
+    /* Punch holes */
+.script-page::before {
+  content: "";
+  position: absolute;
+  left: -3px;
+  top: 0;
+  bottom: 0;
+  width: 6px;
+  background:
+    radial-gradient(circle at 3px 15%, #c8c4bc 10px, transparent 11px),
+    radial-gradient(circle at 3px 50%, #c8c4bc 10px, transparent 11px),
+    radial-gradient(circle at 3px 85%, #c8c4bc 10px, transparent 11px);
+  pointer-events: none;
+}
+
+/* 页顶分隔线：朱砂细线 */
+.script-page > *:first-child::before {
+    content: "";
+    position: absolute;
+    top: 3rem;
+    left: 5.4rem;
+    right: 3.8rem;
+    height: 1px;
+    background: var(--rubric);
+    opacity: 0.3;
+    pointer-events: none;
+} 
+
+/* 页底线 —— 挂在最后一个子元素上 */
+.script-page > *:last-child::after {
+    content: "";
+    position: absolute;
+    bottom: 4rem;
+    left: 5.4rem;
+    right: 3.8rem;
+    height: 1px;
+    background: var(--ink-0);
+    opacity: 0.1;
+    pointer-events: none;
+}
+
+
+/* ============================================================
+   ██  标题块
+       IM Fell 斜体：印刷体中最接近人文主义手稿的字形
+   ============================================================ */
+h1 {
+     font-family: "Courier Prime", "Courier New", Courier, monospace, "IM Fell", Georgia, serif; 
+    font-size: 1.2rem;
+    font-weight: normal;
+    letter-spacing: 0.04em;
+    text-align: center;
+    color: var(--ink-0);
+    /* 晕染直接写入，不依赖工具类（避免选择器冲突） */
+    text-shadow:
+        var(--bleed-x) var(--bleed-y) var(--bleed-r)
+            rgba(139, 26, 14, calc(var(--bleed-a) * 1.1)),
+        calc(var(--bleed-x) * -0.5) calc(var(--bleed-y) * 0.8)
+            calc(var(--bleed-r) * 0.6)
+            rgba(139, 26, 14, calc(var(--bleed-a) * 0.38));
+    margin-bottom: 3rem;
+    padding-bottom: 0.6rem;
+    /* 标题下方单线，朱砂 */
+   /* border-bottom: 1px solid var(--rubric-rule); */
+    /* 三行全部居中 */  display: flex;  flex-direction: column;  align-items: center;  gap: 0.3em;  text-align: center;}
+}
+
+/* 集数编号：绝对定位，左页边，Courier，淡墨 */
+.tag-code {  
+  /* 回归文档流，去掉绝对定位 */  
+  position: static;  
+  font-family: 'Courier Prime', monospace;  
+  font-style: normal;  
+  font-size: 0.68rem;  
+  letter-spacing: 0.10em;  
+  color: var(--ink-3);  
+  text-shadow: var(--bleed-x) var(--bleed-y) var(--bleed-r)       rgba(26, 22, 18, calc(var(--bleed-a) * 0.9));}
+
+/* 分类标签：绝对定位，右页边，细边框印章 */
+.tag-category {
+    position: static;
+    font-family: "Courier Prime", monospace;
+    font-style: normal;
+    font-size: 0.6rem;
+    font-weight: bold;
+    letter-spacing: 0.1em;
+    text-transform: uppercase; 
+    color: var(--rubric);
+    opacity: 0.8;
+   /* border: 1px solid var(--rubric-pale); */
+    padding: 0.1em 0.45em;
+    /* 标签晕染 */
+    text-shadow: var(--bleed-x) var(--bleed-y) var(--bleed-r)
+        rgba(139, 26, 14, calc(var(--bleed-a) * 0.9));
+    
+    outline: 1.5px solid rgba(139, 26, 14, 0.2);
+    outline-offset: 0px;
+    background: rgba(139, 26, 14, 0.02);
+}
+
+/* ============================================================
+   ██  章节标题
+       Courier 全大写，朱砂，¶ 段落符
+   ============================================================ */
+h2 {
+    font-family: font-family: "Courier Prime", "Courier New", Courier, monospace;
+    font-size: 0.82rem;
+    font-weight: bold;
+    letter-spacing: 0.2em;
+    text-transform: uppercase;
+    color: var(--ink-1);
+    text-shadow: var(--bleed-x) var(--bleed-y) var(--bleed-r)
+        rgba(139, 26, 14, calc(var(--bleed-a) * 0.85));
+    margin-top: 3.2rem;
+    margin-bottom: 1.1rem;
+    border-bottom: 1px solid var(--rubric-pale);
+}
+
+h2::before {
+    content: "¶\00a0";
+    color: var(--rubric);
+    opacity: 0.55;
+}
+
+/* ============================================================
+   ██  对话块
+       Grid 两列：[说话人页边] [台词文本]
+       真正的悬挂缩进——文字绝不回绕到说话人名下方
+   ============================================================ */
+.dialogue-block {
+    display: grid;
+    grid-template-columns: 3.4rem 1fr;
+    column-gap: 1.4rem;
+    /* 将说话人列推入左页边空白 */
+    margin-left: -1.4rem;
+}
+
+/* ---- 说话人标签：Courier，朱砂，细竖线隔列 ---- */
+.dialogue-block dt {
+    grid-column: 1;
+    font-family: font-family: "Courier Prime", "Courier New", Courier, monospace;
+    font-size: 0.82rem;
+    font-weight: bold;
+    letter-spacing: 0.02em;
+    text-transform: uppercase;
+    text-align: right;
+    color: var(--ink-1);
+    text-shadow:
+        var(--bleed-x) var(--bleed-y) var(--bleed-r)
+            rgba(139, 26, 14, calc(var(--bleed-a) * 1)),
+        calc(var(--bleed-x) * -0.5) calc(var(--bleed-y) * 0.8)
+            calc(var(--bleed-r) * 0.6)
+            rgba(139, 26, 14, calc(var(--bleed-a) * 0.35));
+    padding-top: 0.5em;
+    padding-right: 0.55rem;
+    align-self: start;
+    /* 细竖线：1px，淡朱砂 */
+    border-right: 1px solid var(--rubric-pale);
+}
+
+/* 无说话人时：隐藏竖线 */
+.dialogue-block dt:empty {
+    border-right-color: transparent;
+}
+
+/* ---- 台词文本：IM Fell，两端对齐，自动断词 ---- */
+.dialogue-block dd {
+    grid-column: 2;
+    margin: 0;
+    padding: 0.32em 0 0.58em;
+    font-family: font-family: "IM Fell English", Georgia, serif; 
+    font-size: 0.875rem;
+    color: var(--ink-1);
+    text-shadow:
+        var(--bleed-x) var(--bleed-y) var(--bleed-r)
+            rgba(26, 22, 18, var(--bleed-a)),
+        calc(var(--bleed-x) * -0.5) calc(var(--bleed-y) * 0.8)
+            calc(var(--bleed-r) * 0.7)
+            rgba(26, 22, 18, calc(var(--bleed-a) * 0.4));
+    overflow-wrap: break-word;
+    hyphens: auto;
+    text-align: justify;
+    -webkit-hyphens: auto;
+    /* 行间细线 */
+    /* border-bottom: 1px solid var(--rule-mid);  */
+}
+
+.dialogue-block dd:last-child {
+    border-bottom: none;
+}
+
+/* ---- 歌词 / 舞台指示：铜绿，Courier 斜体，无竖线 ---- */
+.dialogue-block dd i {
+    display: block;
+    font-family: font-family: "Courier Prime", "Courier New", Courier, monospace;
+    font-style: italic;
+    font-size: 0.82rem;
+    color: var(--verdigris);
+    text-shadow: var(--bleed-x) var(--bleed-y) var(--bleed-r)
+        rgba(42, 92, 78, calc(var(--bleed-a) * 0.85));
+    padding: 0.25em 0.6em;
+    margin: 0.1em 0;
+    /* 无竖线（已去除） */
+    text-align: left;
+    hyphens: none;
+    background: rgba(42, 92, 78, 0.02);
+}
+
+.dialogue-block dd i b {
+    font-style: normal;
+    font-weight: bold;
+    color: var(--rubric);
+    text-shadow: var(--bleed-x) var(--bleed-y) var(--bleed-r)
+        rgba(139, 26, 14, calc(var(--bleed-a) * 1));
+}
+
+/* ---- 长说话人名变体（宽屏） ---- */
+.dialogue-block.long {
+    grid-template-columns: 7.5rem 1fr;
+}
+
+/* ============================================================
+   ██  词汇表附录
+       无表格感。比例 33% | 25% | 42%。
+       词目 IM Fell；词性 Courier 朱砂；释义 Courier 淡墨
+   ============================================================ */
+.vocab-block {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: 0.875rem;
+}
+
+.vocab-block .col-word {
+    width: 33%;
+}
+.vocab-block .col-type {
+    width: 25%;
+}
+.vocab-block .col-def {
+    width: 42%;
+}
+
+.vocab-block th,
+.vocab-block td {
+    padding: 0.4em 0.5em 0.4em 0;
+    vertical-align: top;
+    border: none;
+    background: transparent;
+}
+
+/* 词目：IM Fell，正常字重 */
+.vocab-block th {
+    font-family: "IM Fell English", Georgia, serif;
+    font-weight: normal;
+    font-size: 0.95rem;
+    color: var(--ink-0);
+    text-align: left;
+    text-shadow: var(--bleed-x) var(--bleed-y) var(--bleed-r)
+        rgba(26, 22, 18, var(--bleed-a));
+}
+
+/* 词性：Courier 斜体，朱砂，小字 */
+.vocab-block .type {
+    font-family: "Courier Prime", monospace;
+    font-style: italic;
+    color: var(--ink-3);
+    font-size: 0.75rem;
+    text-shadow: var(--bleed-x) var(--bleed-y) var(--bleed-r)
+        rgba(139, 26, 14, calc(var(--bleed-a) * 0.75));
+}
+
+/* 释义：Courier，淡墨 */
+.vocab-block .definition {
+    font-family: "Courier Prime", monospace;
+    color: var(--ink-1);
+    font-size: 0.86rem;
+    text-shadow: var(--bleed-x) var(--bleed-y) var(--bleed-r)
+        rgba(26, 22, 18, calc(var(--bleed-a) * 0.55));
+}
+
+/* 行间线：仅词汇表保留，极淡 */
+.vocab-block tbody tr + tr th,
+.vocab-block tbody tr + tr td {
+    border-top: 1px solid var(--rule-light);
+    
+}
+
+/* ============================================================
+   ██  页码
+       居中，IM Fell 斜体，淡朱砂，极小
+   ============================================================ */
+/* 页码 —— 挂在 .script-page::after，稳定可靠 */
+.script-page::after {
+  content: "— i —";
+  display: block;
+  text-align: center;
+  font-family: 'IM Fell English', serif;
+  font-style: italic;
+  font-size: 0.7rem;
+  color: var(--rubric-pale);
+  letter-spacing: 0.14em;
+  /* 页码贴近底部内边距 */
+  position: absolute;
+  bottom: 2rem;
+  left: 0;
+  right: 0;
+}
+
+/* ============================================================
+   ██  窄屏响应  ≤ 560px
+       .long 堆叠：说话人名独占一行，台词左缩进
+   ============================================================ */
+@media (max-width: 560px) {
+    body {
+        padding: 0;
+        background: var(--ground);
+    }
+
+    .script-page {
+        padding: 3.2rem 1.6rem 4rem 2.6rem;
+        box-shadow:
+            inset 1px 1px 0 rgba(255, 255, 255, 0.8),
+            0 4px 18px rgba(0, 0, 0, 0.09);
+        min-height: 100vh;
+    }
+
+    .script-page::before {
+        left: 2.6rem;
+        right: 1.6rem;
+    }
+    
+    
+  .script-page > *:last-child::after {
+    left: 2.6rem;
+    right: 1.6rem;
+  }
+
+
+
+    /* 标签回流 */
+    .tag-code,
+    .tag-category {
+        position: static;
+        display: block;
+    }
+
+    .tag-code {
+        font-size: 0.65rem;
+        margin-bottom: 0.25rem;
+    }
+
+    .tag-category {
+        font-size: 0.6rem;
+        margin-bottom: 0.5rem;
+    }
+
+    h1 {
+        font-size: 1.1rem;
+        
+    }
+
+    /* ---- 标准对话块：float BFC 悬挂缩进 ---- */
+    .dialogue-block {
+        display: block;
+        margin-left: 0;
+    }
+
+    .dialogue-block dt {
+        float: left;
+        clear: left;
+        width: 2.8rem;
+        text-align: right;
+        padding-right: 0.5rem;
+        padding-top: 0.44em;
+        font-size: 0.68rem;
+        margin-right: 1rem;
+        /* 保持细竖线 */
+        border-right: 1px solid var(--rubric);
+    }
+
+    .dialogue-block dt:empty {
+        border-right-color: transparent;
+    }
+
+    .dialogue-block dd {
+        overflow: hidden; /* BFC：文字在 float 右侧折行 */
+        padding: 0.28em 0 0.52em;
+        font-size: 0.9375rem;
+    }
+
+    /* ---- .long 堆叠模式 ---- */
+    .dialogue-block.long {
+        display: block;
+        margin-left: 0;
+    }
+
+    /* 说话人名：独占一行，去掉竖线，底部细线 */
+    .dialogue-block.long dt {
+        float: none;
+        clear: none;
+        width: auto;
+        text-align: left;
+        border-right: none;
+        border-bottom: 1px solid var(--rule-mid);
+        padding-right: 0;
+        padding-bottom: 0.18em;
+        margin-right: 0;
+        margin-bottom: 0.18em;
+        font-size: 0.68rem;
+    }
+
+    .dialogue-block.long dt:empty {
+        display: none;
+        border-bottom: none;
+    }
+
+    /* 台词：左缩进 + 左细线（朱砂） */
+    .dialogue-block.long dd {
+        overflow: visible;
+      /*  padding-left: 0.8em;
+        border-left: 1px solid var(--rubric-rule); */
+        
+    }
+
+    /* ---- 词汇表堆叠 ---- */
+    .vocab-block,
+    .vocab-block tbody,
+    .vocab-block tr,
+    .vocab-block th,
+    .vocab-block td {
+        display: block;
+        width: 100%;
+    }
+
+    .vocab-block tr {
+        padding: 0.5em 0;
+        border-top: 1px solid var(--rule-light);
+    }
+
+    .vocab-block tr:first-child {
+        border-top: none;
+    }
+
+    .vocab-block th {
+        font-size: 0.95rem;
+        padding-bottom: 0.04em;
+    }
+    .vocab-block .type {
+        font-size: 0.73rem;
+        padding: 0;
+    }
+    .vocab-block .definition {
+        font-size: 0.84rem;
+        padding-top: 0.06em;
+    }
+
+    /* 重置桌面端的兄弟选择器边框 */
+    .vocab-block tbody tr + tr th,
+    .vocab-block tbody tr + tr td {
+        border-top: none;
+    }
+}

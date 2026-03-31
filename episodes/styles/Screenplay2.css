@@ -1,0 +1,284 @@
+/* ── styles.css ─────────────────────────────────────────────────────────────
+   Screenplay / Script Style
+   ──────────────────────────────────────────────────────────────────────── */
+/* ── Reset & Base ─────────────────────────────────────────────────────────── */
+*, *::before, *::after {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+}
+html {
+  font-size: 16px;
+}
+body {
+  font-family: "Courier Prime", "Courier New", "Courier", monospace;
+  background-color: #c8c8c8;
+  color: #111;
+  line-height: 1.8;
+  padding: 3rem 1rem;
+}
+/* ── Page ─────────────────────────────────────────────────────────────────── */
+.script-page {
+  max-width: 680px;
+  margin: 0 auto;
+  background: #fffef9;
+  box-shadow: 0 1px 1px rgba(0, 0, 0, 0.1), 0 4px 8px rgba(0, 0, 0, 0.1), 0 12px 32px rgba(0, 0, 0, 0.12), 4px 4px 0 #b0b0b0;
+  /* 纸张厚度感 */
+  padding: 5rem 5.5rem 5rem 6rem;
+  /* 左边距模拟装订线 */
+  position: relative;
+  min-height: 60vh;
+}
+/* 装订线 */
+.script-page::before {
+  content: "";
+  position: absolute;
+  top: 0;
+  left: 4rem;
+  bottom: 0;
+  width: 1px;
+  background: rgba(220, 100, 100, 0.25);
+}
+/* 页眉淡线 */
+.script-page::after {
+  content: "";
+  position: absolute;
+  top: 3.5rem;
+  left: 4rem;
+  right: 3rem;
+  height: 1px;
+  background: rgba(0, 0, 0, 0.07);
+}
+/* ── H1 Episode Title ─────────────────────────────────────────────────────── */
+h1 {
+  font-family: "Courier Prime", "Courier New", monospace;
+  font-size: 1rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  text-align: center;
+  color: #111;
+  margin-bottom: 3rem;
+  line-height: 1.5;
+}
+.tag-code {
+  display: block;
+  font-size: 0.8rem;
+  font-weight: 400;
+  letter-spacing: 0.15em;
+  color: #666;
+  margin-bottom: 0.25rem;
+}
+.tag-category {
+  display: block;
+  font-size: 0.75rem;
+  font-weight: 400;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: #999;
+  margin-top: 0.2rem;
+}
+/* ── H2 Section Headings (Key Vocabulary 等) ──────────────────────────────── */
+h2 {
+  font-family: "Courier Prime", "Courier New", monospace;
+  font-size: 0.85rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.12em;
+  color: #444;
+  text-align: center;
+  margin: 3rem 0 1.5rem;
+  position: relative;
+}
+h2::before, h2::after {
+  content: "───";
+  color: #bbb;
+  margin: 0 0.75em;
+  font-weight: 400;
+  letter-spacing: -0.1em;
+}
+/* ── Dialogue Block ───────────────────────────────────────────────────────── */
+/* 短名（A / B / C）：经典剧本两列布局 */
+dl.dialogue-block {
+  display: grid;
+  grid-template-columns: 3rem 1fr;
+  gap: 0;
+  margin-bottom: 0;
+}
+/* 长名（Mr. Campbell 等）：人名独占一行，台词缩进 */
+dl.dialogue-block.long {
+  display: block;
+}
+/* 短名发言人 */
+dl.dialogue-block:not(.long) dt {
+  font-weight: 700;
+  font-size: 0.9rem;
+  text-transform: uppercase;
+  color: #111;
+  text-align: right;
+  padding-right: 0.75rem;
+  padding-top: 0.05em;
+  white-space: nowrap;
+  /* 与 dd 垂直对齐 */
+  align-self: start;
+  margin-bottom: 0.9rem;
+}
+dl.dialogue-block:not(.long) dd {
+  font-size: 0.95rem;
+  margin-bottom: 0.9rem;
+  padding-left: 0;
+  white-space: normal;
+  overflow-wrap: break-word;
+  hyphens: auto;
+  text-align: justify;
+  /* 悬挂缩进：续行对齐到 dd 列左边 */
+}
+/* 长名剧本格式：人名居中大写，台词缩进块 */
+dl.dialogue-block.long dt {
+  font-weight: 700;
+  font-size: 0.85rem;
+  text-transform: uppercase;
+  letter-spacing: 0.1em;
+  text-align: center;
+  color: #111;
+  margin-top: 1.1rem;
+  margin-bottom: 0.1rem;
+}
+dl.dialogue-block.long dd {
+  font-size: 0.95rem;
+  margin: 0 auto 0.9rem;
+  max-width: 85%;
+  white-space: normal;
+  overflow-wrap: break-word;
+  hyphens: auto;
+  text-align: justify;
+}
+/* 针对没有角色名的旁白或歌词（舞台指示） */
+dl.dialogue-block dt:empty::after {
+  content: "";
+}
+/* 旁白（无发言人）*/
+dl.dialogue-block dd i {
+  display: block;
+  font-style: italic;
+  color: #555;
+  text-align: center;
+  margin: 0.5rem auto 1rem;
+  max-width: 85%;
+}
+/* ── Vocab Table ──────────────────────────────────────────────────────────── */
+table.vocab-block {
+  width: 100%;
+  border-collapse: collapse;
+  margin-bottom: 1.5rem;
+  font-family: "Courier Prime", "Courier New", monospace;
+  font-size: 0.88rem;
+  table-layout: fixed;
+}
+table.vocab-block col.col-word {
+  width: 33%;
+}
+table.vocab-block col.col-type {
+  width: 25%;
+}
+table.vocab-block col.col-def {
+  width: 42%;
+}
+table.vocab-block tbody tr {
+  border-bottom: 1px solid #eaeaea;
+  /* 极淡水平线 */
+}
+table.vocab-block tbody tr:first-child {
+  border-top: 1px solid #eaeaea;
+}
+table.vocab-block th {
+  font-weight: 700;
+  padding: 0.55rem 0.5rem 0.55rem 0;
+  vertical-align: top;
+  text-align: left;
+  overflow-wrap: break-word;
+  hyphens: auto;
+  hyphenate-limit-chars: 4 2 2;
+  hyphenate-limit-lines: 2;
+  color: #111;
+}
+table.vocab-block td {
+  padding: 0.55rem 0.5rem 0.55rem 0;
+  vertical-align: top;
+  text-align: left;
+  overflow-wrap: break-word;
+  hyphens: auto;
+  hyphenate-limit-chars: 4 2 2;
+  hyphenate-limit-lines: 2;
+}
+table.vocab-block td.type {
+  font-style: italic;
+  color: #888;
+  font-size: 0.72rem;
+}
+table.vocab-block td.definition {
+  color: #333;
+}
+/* ── Responsive ───────────────────────────────────────────────────────────── */
+@media (max-width: 600px) {
+  body {
+    padding: 0;
+    background: #fffef9;
+  }
+  .script-page {
+    padding: 2.5rem 1.5rem 2.5rem 2rem;
+    box-shadow: none;
+    min-height: 100vh;
+  }
+  .script-page::before {
+    left: 1.25rem;
+  }
+  .script-page::after {
+    left: 1.25rem;
+    right: 1rem;
+  }
+  /* 短名对话窄屏堆叠 */
+  dl.dialogue-block:not(.long) {
+    grid-template-columns: 1fr;
+  }
+  dl.dialogue-block:not(.long) dt {
+    text-align: left;
+    padding-right: 0;
+    margin-bottom: 0.1rem;
+    /*  text-decoration: underline; 移动端角色名加下划线以示区分 */
+  }
+  dl.dialogue-block:not(.long) dd {
+    margin-bottom: 1rem;
+    padding-left: 0.75rem;
+    border-left: 2px solid #ddd;
+  }
+  /* 长名对话窄屏台词不限宽 */
+  dl.dialogue-block.long dd {
+    max-width: 100%;
+  }
+  dl.dialogue-block dd i {
+    max-width: 100%;
+  }
+  /* 词汇表窄屏堆叠 */
+  table.vocab-block, table.vocab-block tbody, table.vocab-block tr, table.vocab-block th, table.vocab-block td {
+    display: block;
+    width: 100%;
+  }
+  table.vocab-block colgroup {
+    display: none;
+  }
+  table.vocab-block tbody tr {
+    padding: 0.6rem 0;
+    border-bottom: 1px solid #eaeaea;
+  }
+  table.vocab-block th {
+    font-size: 0.95rem;
+    padding: 0 0 0.1rem;
+  }
+  table.vocab-block td.type {
+    padding: 0 0 0.1rem;
+  }
+  table.vocab-block td.definition {
+    padding: 0;
+  }
+}

@@ -1,0 +1,214 @@
+/* =========================================
+   全局与页面基础样式 (纯正剧本/打字机风格)
+========================================= */
+body {
+  /* 剧本标准字体：等宽字体，完美还原打字机敲击的质感 */
+  font-family: "Courier New", Courier, "Consolas", monospace;
+  line-height: 1.6;
+  color: #111;
+  /* 极深的炭黑色，模拟墨水 */
+  background-color: #e5e5e5;
+  /* 模拟桌面背景 */
+  margin: 0;
+  padding: 2vw;
+}
+.script-page {
+  max-width: 760px;
+  /* 模拟标准 A4/US Letter 纸张宽度 */
+  margin: 0 auto;
+  background-color: #fdfdfd;
+  /* 略带暖意的纸张白 */
+  padding: 1in 0.8in;
+  /* 剧本标准的页边距 (约 1英寸) */
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.15);
+}
+/* =========================================
+   标题与标签 (场记板风格)
+========================================= */
+h1 {
+  text-align: center;
+  font-size: 19px;
+  text-transform: uppercase;
+  /* 剧本大标题通常全大写 */
+  letter-spacing: 1px;
+  border-bottom: 2px solid #111;
+  padding-bottom: 20px;
+  margin-bottom: 40px;
+}
+.tag-code, .tag-category {
+  display: block;
+  /* 将标签提至标题上方或独立成行 */
+  font-size: 14px;
+  color: #666;
+  font-weight: normal;
+  letter-spacing: 0;
+  margin-bottom: 5px;
+}
+h2 {
+  font-size: 18px;
+  text-transform: uppercase;
+  margin-top: 50px;
+  margin-bottom: 20px;
+  border-bottom: 1px dashed #999;
+  /* 极简的虚线分割 */
+  padding-bottom: 5px;
+}
+/* =========================================
+   对话块 (严格的剧本悬挂缩进排版)
+========================================= */
+.dialogue-block {
+  display: grid;
+  /* 左侧角色名固定宽度，右侧台词自适应，形成利落的垂直分割线 */
+  grid-template-columns: 80px 1fr;
+  column-gap: 25px;
+  row-gap: 1.2em;
+  margin-bottom: 40px;
+}
+.dialogue-block dt {
+  font-weight: bold;
+  font-size: 16px;
+  text-align: right;
+  text-transform: uppercase;
+  /* 角色名全大写是剧本的铁律 */
+  margin-top: 2px;
+  /* 微调与右侧第一行的对齐 */
+}
+.dialogue-block dd {
+  margin: 0;
+  text-align: justify;
+  font-size: 16px;
+  max-width: 600px;
+  /* 限制台词最大宽度，避免视线疲劳 */
+}
+/* 针对没有角色名的旁白或歌词（舞台指示） */
+.dialogue-block dt:empty::after {
+  content: "";
+}
+.dialogue-block dd i {
+  display: block;
+  color: #444;
+  margin-top: 0.5em;
+  padding-left: 10%;
+  /* 舞台指示/旁白进一步向内缩进 */
+}
+/* =========================================
+   词汇块表格 (无边框留白设计，严格 1/3 宽度)
+========================================= */
+.vocab-block {
+  width: 100%;
+  border-collapse: collapse;
+  margin-bottom: 40px;
+  table-layout: fixed;
+  /* 强制布局，防止长单词撑破列宽 */
+}
+/* 确保 单词列 和 释义列 至少占据 1/3 宽度 */
+.vocab-block .col-word {
+  width: 33%;
+}
+.vocab-block .col-def {
+  width: 42%;
+}
+.vocab-block .col-type {
+  width: 25%;
+}
+.vocab-block th, .vocab-block td {
+  padding: 12px 15px 12px 0;
+  text-align: left;
+  vertical-align: top;
+  border: none;
+  /* 移除所有垂直和外侧边框 */
+  border-bottom: 1px solid #eaeaea;
+  /* 仅保留极淡的水平辅助线 */
+  word-wrap: break-word;
+  /* 单词换行防重叠 */
+}
+.vocab-block th {
+  font-weight: bold;
+  font-size: 16px;
+  color: #111;
+}
+.vocab-block td.type {
+  font-style: italic;
+  color: #666;
+  font-size: 14px;
+}
+.vocab-block td.definition {
+  color: #333;
+}
+/* =========================================
+   响应式设计 (窄屏/移动端自动堆叠)
+========================================= */
+@media screen and (max-width: 600px) {
+  body {
+    padding: 0;
+    background-color: #fdfdfd;
+  }
+  .script-page {
+    padding: 30px 20px;
+    box-shadow: none;
+  }
+  /* 1. 对话块自动堆叠 */
+  .dialogue-block {
+    display: block;
+    /* 取消 Grid，改为上下堆叠 */
+  }
+  .dialogue-block dt {
+    text-align: left;
+    margin-top: 1.5em;
+    margin-bottom: 0.3em;
+    text-decoration: underline;
+    /* 移动端角色名加下划线以示区分 */
+  }
+  .dialogue-block dd {
+    padding-left: 1em;
+    /* 台词整体向右缩进 */
+    border-left: 2px solid #ccc;
+    /* 左侧加入极简引导线 */
+  }
+  .dialogue-block dt:empty {
+    display: none;
+  }
+  .dialogue-block dt:empty + dd {
+    margin-top: 1.5em;
+    border-left: none;
+    padding-left: 0;
+    text-align: center;
+    /* 旁白/歌词在移动端居中显示 */
+  }
+  .dialogue-block dd i {
+    padding-left: 0;
+  }
+  /* 2. 词汇表无边框卡片式堆叠 */
+  .vocab-block, .vocab-block tbody, .vocab-block tr, .vocab-block th, .vocab-block td {
+    display: block;
+    width: 100%;
+    box-sizing: border-box;
+  }
+  .vocab-block tr {
+    margin-bottom: 20px;
+    padding-bottom: 15px;
+    border-bottom: 1px dashed #ccc;
+    /* 词汇之间用虚线隔开 */
+  }
+  .vocab-block th {
+    padding: 0 0 5px 0;
+    border: none;
+    font-size: 18px;
+  }
+  .vocab-block td {
+    padding: 0 0 5px 0;
+    border: none;
+  }
+  .vocab-block td.type {
+    font-size: 14px;
+    color: #888;
+    margin-bottom: 5px;
+  }
+  /* 移动端为释义列增加一个伪元素提示，提升阅读体验 */
+  .vocab-block td.definition::before {
+    content: "Def: ";
+    font-weight: bold;
+    font-size: 12px;
+    color: #999;
+  }
+}
